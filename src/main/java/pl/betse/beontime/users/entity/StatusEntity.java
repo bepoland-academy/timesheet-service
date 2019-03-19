@@ -17,9 +17,4 @@ public class StatusEntity {
     @Column(name = "STATUS_NAME", nullable = false)
     private String status;
 
-    @JoinColumn(name = "TIME_ENTRY_ID")
-    @OneToOne(fetch = FetchType.EAGER)
-    TimeEntryEntity timeEntryEntity;
-
-
 }

@@ -18,6 +18,9 @@
             <column name="time_entry_id" autoIncrement="true" type="BIGINT">
                 <constraints primaryKey="true" unique="true" nullable="false"/>
             </column>
+            <column name="time_entry_guid" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
             <column name="project_guid" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>

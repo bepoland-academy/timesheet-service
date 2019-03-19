@@ -4,7 +4,8 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @Entity
@@ -16,7 +17,7 @@ public class TimeEntryEntity {
     @Column(name = "TIME_ENTRY_ID")
     private Long id;
 
-    @Column(name = "TIME_ENTRY_GUID" , nullable = false, unique = true)
+    @Column(name = "TIME_ENTRY_GUID", nullable = false, unique = true)
     private String guid;
 
     @Column(name = "PROJECT_GUID", nullable = false, unique = true)
@@ -25,14 +26,15 @@ public class TimeEntryEntity {
     @Column(name = "USER_GUID", nullable = false, unique = true)
     private String userGuid;
 
-    @OneToOne(fetch = FetchType.EAGER, mappedBy = "timeEntryEntity")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "STATUS_ID")
     StatusEntity statusEntity;
 
     @Column(name = "HOURS_NUMBER")
-    private Double hoursNumber;
+    private BigDecimal hoursNumber;
 
     @Column(name = "DATE")
-    private LocalDateTime dateTime;
+    private LocalDate entryDate;
 
     @Length(max = 500)
     @Column(name = "COMMENTS")
