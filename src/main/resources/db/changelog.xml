@@ -1,0 +1,60 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+    <changeSet id="timesheet_service_v_1" author="wk">
+
+        <createTable tableName="status">
+            <column name="status_id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="status_name" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="time_entry">
+            <column name="time_entry_id" autoIncrement="true" type="BIGINT">
+                <constraints primaryKey="true" unique="true" nullable="false"/>
+            </column>
+            <column name="project_guid" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_guid" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hours_number" type="DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="time_entry" baseColumnNames="status_id"
+                                 constraintName="time_entry_status_fk"
+                                 referencedTableName="status"
+                                 referencedColumnNames="status_id"/>
+        <createIndex tableName="time_entry" indexName="time_entry_project_guid_index">
+            <column name="project_guid"/>
+        </createIndex>
+        <createIndex tableName="time_entry" indexName="time_entry_user_guid_index">
+            <column name="user_guid"/>
+        </createIndex>
+        <createIndex tableName="time_entry" indexName="time_entry_status_index">
+            <column name="status_id"/>
+        </createIndex>
+        <sqlFile dbms="mysql"
+                 encoding="utf8"
+                 path="data.sql"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"/>
+    </changeSet>
+
+
+</databaseChangeLog>

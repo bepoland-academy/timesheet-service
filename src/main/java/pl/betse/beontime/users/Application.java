@@ -2,9 +2,11 @@ package pl.betse.beontime.users;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.liquibase.LiquibaseDataSource;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
 @SpringBootApplication
+@LiquibaseDataSource
 @EnableEurekaClient
 public class Application {
 
