@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface TimeEntryRepository extends JpaRepository<TimeEntryEntity, Long> {
-    List<TimeEntryEntity> findByGuidAndWeek(String guid, String week);
+    List<TimeEntryEntity> findByUserGuidAndWeek(String guid, String week);
 }

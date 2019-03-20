@@ -14,18 +14,18 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class WeekDayBody {
     private String day;
-    private LocalDate date;
+    private String date;
     private BigDecimal hours;
     private String status;
     private String comment;
 
 
-    public WeekDayBody(String date, BigDecimal hours, String status, String comment) {
-        this.date = LocalDate.parse(date);
-        this.day = this.date.getDayOfWeek().name();
-        this.hours = hours;
-        this.status = status;
-        this.comment = comment;
-    }
+//    public WeekDayBody(String date, BigDecimal hours, String status, String comment) {
+//        this.date = LocalDate.parse(date);
+//        this.day = this.date.getDayOfWeek().name();
+//        this.hours = hours;
+//        this.status = status;
+//        this.comment = comment;
+//    }
 
 }

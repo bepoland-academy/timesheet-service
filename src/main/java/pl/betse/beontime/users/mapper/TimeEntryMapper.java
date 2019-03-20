@@ -7,6 +7,10 @@ import pl.betse.beontime.users.entity.TimeEntryEntity;
 import pl.betse.beontime.users.model.WeekDayBody;
 import pl.betse.beontime.users.model.WeekTimeEntryBody;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Mapper(componentModel = "spring", uses = {GuidMapper.class})
 public abstract class TimeEntryMapper {
 
@@ -23,7 +27,7 @@ public abstract class TimeEntryMapper {
 
         return WeekDayBody.builder()
                 .day(timeEntryBo.getEntryDate().getDayOfWeek().name())
-                .date(timeEntryBo.getEntryDate())
+                .date(timeEntryBo.getEntryDate().toString())
                 .comment(timeEntryBo.getComment())
                 .hours(timeEntryBo.getHoursNumber())
                 .status(timeEntryBo.getStatus())
@@ -35,7 +39,7 @@ public abstract class TimeEntryMapper {
         return TimeEntryBo.builder()
                 .userGuid(userGuid)
                 .projectGuid(weekTimeEntryBody.getProjectId())
-                .entryDate(weekDayBody.getDate())
+                .entryDate(LocalDate.parse(weekDayBody.getDate()))
                 .hoursNumber(weekDayBody.getHours())
                 .comment(weekDayBody.getComment())
                 .week(weekTimeEntryBody.getWeek())
@@ -43,5 +47,12 @@ public abstract class TimeEntryMapper {
                 .build();
     }
 
+    public WeekTimeEntryBody fromTimeEntryBosToWeekTimeEntryBody(List<TimeEntryBo> timeEntryBoList) {
+        return WeekTimeEntryBody.builder()
+                .week(timeEntryBoList.get(0).getWeek())
+                .projectId(timeEntryBoList.get(0).getProjectGuid())
+                .weekDays(timeEntryBoList.stream().map(entry -> this.fromBoToWeekDayBody(entry)).collect(Collectors.toList()))
+                .build();
+    }
 
 }

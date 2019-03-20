@@ -56,6 +56,9 @@
         <createIndex tableName="time_entry" indexName="time_entry_status_index">
             <column name="status_id"/>
         </createIndex>
+        <createIndex tableName="time_entry" indexName="time_entry_week_index">
+            <column name="week"/>
+        </createIndex>
         <sqlFile dbms="mysql"
                  encoding="utf8"
                  path="data.sql"

@@ -43,6 +43,4 @@ public class TimeEntryEntity {
     @Column(name = "WEEK")
     private String week;
 
-
-
 }
