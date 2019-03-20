@@ -37,8 +37,12 @@ public class TimeEntryEntity {
     private LocalDate entryDate;
 
     @Length(max = 500)
-    @Column(name = "COMMENTS")
-    private String comments;
+    @Column(name = "COMMENT")
+    private String comment;
+
+    @Column(name = "WEEK")
+    private String week;
+
 
 
 }

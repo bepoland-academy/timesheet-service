@@ -38,6 +38,9 @@
             </column>
             <column name="comment" type="VARCHAR(255)">
             </column>
+            <column name="week" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
         <addForeignKeyConstraint baseTableName="time_entry" baseColumnNames="status_id"
