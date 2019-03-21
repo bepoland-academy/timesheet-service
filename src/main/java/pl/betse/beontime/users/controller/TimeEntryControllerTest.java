@@ -6,7 +6,6 @@ import pl.betse.beontime.users.bo.TimeEntryBo;
 import pl.betse.beontime.users.entity.StatusEntity;
 import pl.betse.beontime.users.entity.TimeEntryEntity;
 import pl.betse.beontime.users.mapper.TimeEntryMapper;
-import pl.betse.beontime.users.model.ConsultantTimeEntriesBody;
 import pl.betse.beontime.users.model.WeekDayBody;
 import pl.betse.beontime.users.model.WeekTimeEntryBody;
 import pl.betse.beontime.users.repository.StatusRepository;
@@ -32,10 +31,10 @@ public class TimeEntryControllerTest {
     }
 
     @GetMapping
-    public ResponseEntity<ConsultantTimeEntriesBody> getTime() {
+    public ResponseEntity<WeekTimeEntryBody> getTime() {
 
 
-        return ResponseEntity.ok(new ConsultantTimeEntriesBody(Collections.singletonList(timeEntryMapper.fromTimeEntryBosToWeekTimeEntryBody(new ArrayList<>()))));
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/entity-to-weekbody")

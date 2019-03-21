@@ -15,6 +15,6 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
     @ExceptionHandler({TimeEntryForUserWeekNotFound.class})
     public @ResponseBody
     ResponseEntity<ErrorResponse> sendTimeEntryForUserNotFoundMessage() {
-        return new ResponseEntity<>(new ErrorResponse("Time entry for user not found"), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new ErrorResponse("Time entry for user in requested week has been not found."), HttpStatus.NOT_FOUND);
     }
 }
