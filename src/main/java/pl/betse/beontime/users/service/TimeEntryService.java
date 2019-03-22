@@ -40,10 +40,6 @@ public class TimeEntryService {
         return timeEntryBoList;
     }
 
-    public List<TimeEntryBo> findByManagerGuidConsultantGuidAndMonth(String managerGuid, String consultantGuid, String Month) {
-//        List<TimeEntryBo> timeEntryBoList = timeEntryRepository
-        return null;
-    }
 
     public void saveWholeWeekForUser(List<TimeEntryBo> timeEntryBoList) {
         List<TimeEntryEntity> timeEntryEntityList = new ArrayList<>();
@@ -57,31 +53,4 @@ public class TimeEntryService {
         timeEntryRepository.save(timeEntryEntity);
     }
 
-    public void verifyAllFileds(List<TimeEntryBo> timeEntryBoList, String weekNumber) {
-//            timeEntryRepository.findByUserGuid(timeEntryBoList.stream().findFirst().orElseGet(()->{
-//                log.error("USER NOT FOUND");
-//                throw new UserNotFoundException();
-//            }).getUserGuid());
-//            timeEntryRepository.findByProjectGuid(timeEntryBoList.stream().findFirst().orElseGet(()->{
-//                log.error("PROJECT NOT FOUND");
-//                throw new ProjectNotFoundException();
-//            }).getProjectGuid());
-
-       // timeEntryRepository.findByUserGuid(timeEntryBoList.get(0).getUserGuid()).orElseThrow(UserNotFoundException::new);
-        timeEntryRepository.findByProjectGuid(timeEntryBoList.get(0).getProjectGuid()).orElseThrow(ProjectNotFoundException::new);
-//        if (timeEntryBoList.isEmpty())
-//
-//            for (TimeEntryBo timeEntryBo : timeEntryBoList) {
-//                if (timeEntryBo.getStatus() == null) {
-//                    throw new StatusNotFoundException();
-//                } else if (timeEntryBoList.size() > 6) {
-//                    throw new IncorectWeekDaysException();
-//                } else if (timeEntryBo.getProjectGuid() == null) {
-//
-//                } else if (timeEntryBo.getWeek() == timeEntryBo.getEntryDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)) ;
-//            }
-//        }
-
-
-    }
 }
