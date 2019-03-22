@@ -13,6 +13,8 @@ import pl.betse.beontime.users.repository.StatusRepository;
 import pl.betse.beontime.users.repository.TimeEntryRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,15 +37,34 @@ public class TimeEntryService {
         this.statusMapper = statusMapper;
     }
 
-    public List<TimeEntryBo> findByUserGuidAndWeak(String guid, String week) {
+    public List<TimeEntryBo> findByUserGuidAndWeek(String guid, String week) {
         List<TimeEntryBo> timeEntryBoList = timeEntryRepository.findByUserGuidAndWeek(guid, week).stream()
                 .map(timeEntryMapper::fromEntityToBo)
                 .collect(Collectors.toList());
         if (timeEntryBoList.isEmpty()) {
-            log.error("Time entry for user with guid = " + guid + " and week = " + week + " does not exists.");
+            log.error("Time entry for user with guid = " + guid + " and week = " + week + " not exists.");
             throw new TimeEntryForUserWeekNotFound();
         }
         return timeEntryBoList;
+    }
+
+    public void checkIfTimeEntriesExist(List<TimeEntryBo> timeEntryBoList, String week) {
+        timeEntryBoList.forEach(x -> {
+            TimeEntryEntity timeEntryEntity = timeEntryMapper.fromBoToEntity(x);
+            checkIfDateIsInCorrectWeekOfYear(week, timeEntryEntity.getEntryDate());
+            if (timeEntryRepository.existsByUserGuidAndProjectGuidAndEntryDate(timeEntryEntity.getUserGuid(), timeEntryEntity.getProjectGuid(), timeEntryEntity.getEntryDate())) {
+                log.error("Time entry for user " + timeEntryEntity.getUserGuid() + " and project " + timeEntryEntity.getProjectGuid() + " with date " + timeEntryEntity.getEntryDate() + " currently exist in database!");
+                throw new TimeEntryExistsInDatabase();
+            }
+        });
+    }
+
+    public void checkIfDateIsInCorrectWeekOfYear(String week, LocalDate date) {
+        int weekNumber = Integer.parseInt(week.substring(6, 8));
+        if (date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) != weekNumber) {
+            log.error("Date is not in that week of the year.");
+            throw new BadWeekAndDateException();
+        }
     }
 
 
@@ -53,11 +74,11 @@ public class TimeEntryService {
         List<StatusEntity> statusEntities = statusRepository.findAll();
         timeEntryEntityList.forEach(entry -> {
             if (!timeEntryRepository.existsByProjectGuid(entry.getProjectGuid())) {
-                log.error("Project with guid" + entry.getProjectGuid() + " has been not found");
+                log.error("Project with guid" + entry.getProjectGuid() + " not found.");
                 throw new ProjectNotFoundException();
             }
             if (!timeEntryRepository.existsByUserGuid(entry.getUserGuid())) {
-                log.error("User with guid" + entry.getUserGuid() + " has been not found");
+                log.error("User with guid" + entry.getUserGuid() + "  not found.");
                 throw new UserNotFoundException();
             }
             verifyStatusNames(entry.getStatusEntity(), statusEntities);

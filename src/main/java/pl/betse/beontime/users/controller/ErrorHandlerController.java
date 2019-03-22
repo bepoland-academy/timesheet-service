@@ -64,6 +64,24 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse("WRONG STATUS FOR ENTRY" + e.getAdditionalMessage()), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler({TimeEntryExistsInDatabase.class})
+    public @ResponseBody
+    ResponseEntity<ErrorResponse> sendTimeEntryExistsInDatabaseMessage() {
+        return new ResponseEntity<>(new ErrorResponse("TIME ENTRY CURRENTLY EXISTS IN DATABASE"), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler({BadWeekAndDateException.class})
+    public @ResponseBody
+    ResponseEntity<ErrorResponse> sendBadWeekAndDateExceptionMessage() {
+        return new ResponseEntity<>(new ErrorResponse("CURRENT DATE IS NOT IN CHOSEN WEEK"), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({IncorrectWeekFormatException.class})
+    public @ResponseBody
+    ResponseEntity<ErrorResponse> sendIncorrectWeekFormatExceptionMessage() {
+        return new ResponseEntity<>(new ErrorResponse("INCORRECT WEEK FORMAT OR NUMBER."), HttpStatus.BAD_REQUEST);
+    }
+
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {

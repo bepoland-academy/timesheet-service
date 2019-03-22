@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.validation.annotation.Validated;
 import pl.betse.beontime.users.validation.CreateTimeEntry;
 
@@ -19,14 +20,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Validated(CreateTimeEntry.class)
-public class WeekTimeEntryBody {
+public class WeekTimeEntryBody extends ResourceSupport {
 
     @NotEmpty(groups = {CreateTimeEntry.class}, message = "ProjectId can't be empty!")
     @NotNull(groups = {CreateTimeEntry.class}, message = "ProjectId can't be null!")
     private String projectId;
 
-    @NotEmpty(groups = {CreateTimeEntry.class}, message = "Week number can't be empty!")
-    @NotNull(groups = {CreateTimeEntry.class}, message = "Week number can't be null!")
     private String week;
 
     @NotEmpty(groups = {CreateTimeEntry.class}, message = "Week days can't be empty!")

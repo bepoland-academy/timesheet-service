@@ -14,9 +14,9 @@ import java.util.Optional;
 public interface TimeEntryRepository extends JpaRepository<TimeEntryEntity, Long> {
     List<TimeEntryEntity> findByUserGuidAndWeek(String guid, String week);
 
-    Optional<TimeEntryEntity> findByUserGuid(String userGuid);
+    Optional<TimeEntryEntity> findByUserGuidAndProjectGuidAndEntryDate(String userGuid, String projectGuid, LocalDate entryDate);
 
-    Optional<TimeEntryEntity> findByProjectGuid(String projectGuid);
+    boolean existsByUserGuidAndProjectGuidAndEntryDate(String userGuid, String projectGuid, LocalDate entryDate);
 
     boolean existsByProjectGuid(String projectGuid);
 
