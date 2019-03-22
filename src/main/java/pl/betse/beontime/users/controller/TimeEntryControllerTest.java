@@ -6,13 +6,13 @@ import pl.betse.beontime.users.bo.TimeEntryBo;
 import pl.betse.beontime.users.entity.StatusEntity;
 import pl.betse.beontime.users.entity.TimeEntryEntity;
 import pl.betse.beontime.users.mapper.TimeEntryMapper;
+import pl.betse.beontime.users.model.MonthTimeEntryBody;
 import pl.betse.beontime.users.model.WeekDayBody;
 import pl.betse.beontime.users.model.WeekTimeEntryBody;
 import pl.betse.beontime.users.repository.StatusRepository;
 import pl.betse.beontime.users.repository.TimeEntryRepository;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,10 +31,13 @@ public class TimeEntryControllerTest {
     }
 
     @GetMapping
-    public ResponseEntity<WeekTimeEntryBody> getTime() {
+    public ResponseEntity<List<TimeEntryBo>> getTime(@RequestBody MonthTimeEntryBody monthTimeEntryBody) {
 
+        List<TimeEntryBo> timeEntryBoList = monthTimeEntryBody.getMonthDays().stream()
+                .map(entry -> timeEntryMapper.fromMonthDayBodyToBo(entry, monthTimeEntryBody))
+                .collect(Collectors.toList());
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(timeEntryBoList);
     }
 
     @GetMapping("/entity-to-weekbody")
@@ -54,18 +57,27 @@ public class TimeEntryControllerTest {
         List<TimeEntryBo> timeEntryBoList = timeEntryEntityList.stream()
                 .map(timeEntryMapper::fromEntityToBo)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(timeEntryMapper.fromTimeEntryBosToWeekTimeEntryBody(timeEntryBoList));
+
+        timeEntryBoList = new ArrayList<>();
+
+        WeekTimeEntryBody weekTimeEntryBody;
+
+        if (timeEntryBoList.isEmpty()) {
+            weekTimeEntryBody = new WeekTimeEntryBody("---", "---", new ArrayList<>());
+            return ResponseEntity.ok(weekTimeEntryBody);
+        }
+        return ResponseEntity.ok(timeEntryMapper.fromTimeEntryBoToWeekTimeEntryBody(timeEntryBoList));
     }
 
     @PostMapping("/weekBody-to-entry/{userGuid}")
     public ResponseEntity<WeekTimeEntryBody> test13(@RequestBody WeekTimeEntryBody weekTimeEntryBody, @PathVariable("userGuid") String userGuid) {
-        List<TimeEntryBo> timeEntryBoList = weekTimeEntryBody.getWeekDays()
-                .stream()
-                .map(entry -> timeEntryMapper.fromWeekDayBodyToBo(entry, weekTimeEntryBody, userGuid))
-                .collect(Collectors.toList());
+//        List<TimeEntryBo> timeEntryBoList = weekTimeEntryBody.getWeekDays()
+//                .stream()
+//                .map(entry -> timeEntryMapper.fromWeekDayBodyToBo(entry, weekTimeEntryBody, userGuid))
+//                .collect(Collectors.toList());
 
 
-        return ResponseEntity.ok(timeEntryMapper.fromTimeEntryBosToWeekTimeEntryBody(timeEntryBoList));
+        return ResponseEntity.ok().build();
 //        return ResponseEntity.ok(timeEntryBoList
 //                .stream()
 //                .map(entry -> timeEntryMapper.fromBoToEntity(entry)).collect(Collectors.toList()));

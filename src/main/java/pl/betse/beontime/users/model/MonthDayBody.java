@@ -5,16 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
 
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class WeekTimeEntryBody {
-    private String projectId;
-    private String week;
-    private List<WeekDayBody> weekDays = new ArrayList<>();
+public class MonthDayBody {
+    private String date;
+    private BigDecimal hours;
+    private String status;
+    private String comment;
 }

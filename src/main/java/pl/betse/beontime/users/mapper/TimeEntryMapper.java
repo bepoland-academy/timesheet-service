@@ -1,9 +1,12 @@
 package pl.betse.beontime.users.mapper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import pl.betse.beontime.users.bo.TimeEntryBo;
 import pl.betse.beontime.users.entity.TimeEntryEntity;
+import pl.betse.beontime.users.model.MonthDayBody;
+import pl.betse.beontime.users.model.MonthTimeEntryBody;
 import pl.betse.beontime.users.model.WeekDayBody;
 import pl.betse.beontime.users.model.WeekTimeEntryBody;
 
@@ -11,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Mapper(componentModel = "spring", uses = {GuidMapper.class})
 public abstract class TimeEntryMapper {
 
@@ -35,24 +39,36 @@ public abstract class TimeEntryMapper {
 
     }
 
-    public TimeEntryBo fromWeekDayBodyToBo(WeekDayBody weekDayBody, WeekTimeEntryBody weekTimeEntryBody, String userGuid) {
+    public TimeEntryBo fromWeekDayBodyToBo(WeekDayBody weekDayBody, WeekTimeEntryBody weekTimeEntryBody, String userGuid, String weekNumber) {
         return TimeEntryBo.builder()
                 .userGuid(userGuid)
                 .projectGuid(weekTimeEntryBody.getProjectId())
                 .entryDate(LocalDate.parse(weekDayBody.getDate()))
                 .hoursNumber(weekDayBody.getHours())
                 .comment(weekDayBody.getComment())
-                .week(weekTimeEntryBody.getWeek())
+                .week(weekNumber)
                 .status(weekDayBody.getStatus())
                 .build();
     }
 
-    public WeekTimeEntryBody fromTimeEntryBosToWeekTimeEntryBody(List<TimeEntryBo> timeEntryBoList) {
+    public WeekTimeEntryBody fromTimeEntryBoToWeekTimeEntryBody(List<TimeEntryBo> timeEntryBoList) {
         return WeekTimeEntryBody.builder()
-                .week(timeEntryBoList.get(0).getWeek())
-                .projectId(timeEntryBoList.get(0).getProjectGuid())
+                .week(!timeEntryBoList.isEmpty() ? timeEntryBoList.get(0).getWeek() : "no week - mapper!")
+                .projectId(!timeEntryBoList.isEmpty() ? timeEntryBoList.get(0).getProjectGuid() : "no guid - mapper!")
                 .weekDays(timeEntryBoList.stream().map(entry -> this.fromBoToWeekDayBody(entry)).collect(Collectors.toList()))
                 .build();
+    }
+
+    public TimeEntryBo fromMonthDayBodyToBo(MonthDayBody monthDayBody, MonthTimeEntryBody monthTimeEntryBody) {
+        return TimeEntryBo.builder()
+                .userGuid(monthTimeEntryBody.getConsultantId())
+                .projectGuid(monthTimeEntryBody.getProjectId())
+                .entryDate(LocalDate.parse(monthDayBody.getDate()))
+                .hoursNumber(monthDayBody.getHours())
+                .status(monthDayBody.getStatus())
+                .comment(monthDayBody.getComment())
+                .build();
+
     }
 
 }

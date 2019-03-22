@@ -12,9 +12,10 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+public class MonthTimeEntryBody {
 
-public class WeekTimeEntryBody {
+    private String consultantId;
     private String projectId;
-    private String week;
-    private List<WeekDayBody> weekDays = new ArrayList<>();
+    private String month;
+    private List<MonthDayBody> monthDays = new ArrayList<>();
 }
