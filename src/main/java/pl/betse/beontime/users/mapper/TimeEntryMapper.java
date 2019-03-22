@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 public abstract class TimeEntryMapper {
 
     @Mapping(source = "guid", target = "timeEntryId")
-    @Mapping(source = "statusEntity.status", target = "status")
+    @Mapping(source = "statusEntity.name", target = "status")
     public abstract TimeEntryBo fromEntityToBo(TimeEntryEntity timeEntryEntity);
 
     @Mapping(source = "timeEntryId", target = "guid", qualifiedByName = "mapGuid")
-    @Mapping(source = "status", target = "statusEntity.status")
+    @Mapping(source = "status", target = "statusEntity.name")
     public abstract TimeEntryEntity fromBoToEntity(TimeEntryBo timeEntryBo);
 
 

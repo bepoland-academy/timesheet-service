@@ -25,13 +25,13 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
     @ExceptionHandler({WeekDaysListIsEmptyException.class})
     public @ResponseBody
     ResponseEntity<ErrorResponse> sendWeekDaysListIsEmptyMessage() {
-        return new ResponseEntity<>(new ErrorResponse("Week days shouldn't be an empty list!"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ErrorResponse("WEEK DAYS SHOULDN'T BE AN EMPTY LIST!"), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({StatusNotFoundException.class})
     public @ResponseBody
     ResponseEntity<ErrorResponse> sendStatusNotFoundMessage() {
-        return new ResponseEntity<>(new ErrorResponse("Status not found!"), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new ErrorResponse("STATUS NOT FOUND!"), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler({ProjectNotFoundException.class})
@@ -57,6 +57,13 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
     ResponseEntity<ErrorResponse> sendIncorectNUmberOfDaysMessage() {
         return new ResponseEntity<>(new ErrorResponse("NUMBER OF DAYS IN WEEK IS INCORRECT"), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler({WrongStatusException.class})
+    public @ResponseBody
+    ResponseEntity<ErrorResponse> sendWrongStatusMessage(WrongStatusException e) {
+        return new ResponseEntity<>(new ErrorResponse("WRONG STATUS FOR ENTRY" + e.getAdditionalMessage()), HttpStatus.BAD_REQUEST);
+    }
+
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {

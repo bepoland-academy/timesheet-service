@@ -26,7 +26,7 @@ public class TimeEntryEntity {
     @Column(name = "USER_GUID", nullable = false, unique = true)
     private String userGuid;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "STATUS_ID")
     StatusEntity statusEntity;
 

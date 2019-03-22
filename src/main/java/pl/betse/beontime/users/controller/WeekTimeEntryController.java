@@ -6,14 +6,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import pl.betse.beontime.users.bo.TimeEntryBo;
 import pl.betse.beontime.users.mapper.TimeEntryMapper;
-import pl.betse.beontime.users.model.WeekDayBody;
 import pl.betse.beontime.users.model.WeekTimeEntryBody;
 import pl.betse.beontime.users.service.TimeEntryService;
 import pl.betse.beontime.users.validation.CreateTimeEntry;
 
-import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -43,7 +42,10 @@ public class WeekTimeEntryController {
             @PathVariable("userGuid") String userGuid,
             @PathVariable("weekNumber") String weekNumber) {
 
-
+        List<TimeEntryBo> timeEntryBoList = weekTimeEntryBody.getWeekDays().stream()
+                .map(entry -> timeEntryMapper.fromWeekDayBodyToBo(entry, weekTimeEntryBody, userGuid, weekNumber))
+                .collect(Collectors.toList());
+        timeEntryService.saveWeekForUser(timeEntryBoList);
 
         return ResponseEntity.created(URI.create("asd")).build();
     }

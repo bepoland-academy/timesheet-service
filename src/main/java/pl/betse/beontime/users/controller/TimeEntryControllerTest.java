@@ -97,7 +97,7 @@ public class TimeEntryControllerTest {
     @PostMapping
     public ResponseEntity newUser(@RequestBody TimeEntryBo timeEntryBo) {
 
-        StatusEntity statusEntity = statusRepository.findByStatus(timeEntryBo.getStatus()).orElseThrow(RuntimeException::new);
+        StatusEntity statusEntity = statusRepository.findByName(timeEntryBo.getStatus()).orElseThrow(RuntimeException::new);
 
         TimeEntryEntity timeEntryEntity = timeEntryMapper.fromBoToEntity(timeEntryBo);
         timeEntryEntity.setStatusEntity(statusEntity);

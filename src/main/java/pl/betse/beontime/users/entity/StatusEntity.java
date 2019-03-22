@@ -3,6 +3,7 @@ package pl.betse.beontime.users.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Data
 @Entity
@@ -15,6 +16,5 @@ public class StatusEntity {
     private Long id;
 
     @Column(name = "STATUS_NAME", nullable = false)
-    private String status;
-
+    private String name;
 }
