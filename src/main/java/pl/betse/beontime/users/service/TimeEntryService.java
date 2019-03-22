@@ -37,16 +37,44 @@ public class TimeEntryService {
         this.statusMapper = statusMapper;
     }
 
-    public List<TimeEntryBo> findByUserGuidAndWeek(String guid, String week) {
-        List<TimeEntryBo> timeEntryBoList = timeEntryRepository.findByUserGuidAndWeek(guid, week).stream()
+    public List<List<TimeEntryBo>> findByUserGuidAndWeek(String userGuid, String week) {
+        List<TimeEntryBo> timeEntryBoList = timeEntryRepository.findByUserGuidAndWeek(userGuid, week).stream()
                 .map(timeEntryMapper::fromEntityToBo)
                 .collect(Collectors.toList());
-        if (timeEntryBoList.isEmpty()) {
-            log.error("Time entry for user with guid = " + guid + " and week = " + week + " not exists.");
+
+        List<String> projectNames = new ArrayList<>();
+        timeEntryBoList.forEach(entry -> {
+            if (!projectNames.contains(entry.getProjectGuid())) {
+                projectNames.add(entry.getProjectGuid());
+            }
+        });
+        List<List<TimeEntryBo>> allProjectsForWeekList = new ArrayList<>();
+        projectNames.forEach(projectGuid -> {
+            allProjectsForWeekList.add(timeEntryRepository.findByUserGuidAndProjectGuidAndWeek(userGuid, projectGuid, week).stream()
+                    .map(timeEntryMapper::fromEntityToBo)
+                    .collect(Collectors.toList()));
+        });
+        if (allProjectsForWeekList.isEmpty()) {
+            log.error("Time entry for user with guid = " + userGuid + " and week = " + week + " not exists.");
             throw new TimeEntryForUserWeekNotFound();
         }
-        return timeEntryBoList;
+        return allProjectsForWeekList;
     }
+
+    public void saveWeekForUser(List<TimeEntryBo> timeEntryBoList) {
+        List<TimeEntryEntity> timeEntryEntityList = validateWeekTimeEntry(timeEntryBoList);
+        timeEntryEntityList.forEach(entry -> {
+            entry.setStatusEntity(statusRepository.findByName(entry.getStatusEntity().getName()).get());
+            timeEntryRepository.save(entry);
+        });
+    }
+
+    public void editWeekHoursAndStatuses(List<TimeEntryBo> timeEntryBoList, String userGuid, String weekNumber) {
+        List<TimeEntryEntity> incomingList = validateWeekTimeEntry(timeEntryBoList);
+        List<TimeEntryEntity> databaseList = timeEntryRepository.findByUserGuidAndWeek(userGuid, weekNumber);
+
+    }
+
 
     public void checkIfTimeEntriesExist(List<TimeEntryBo> timeEntryBoList, String week) {
         timeEntryBoList.forEach(x -> {
@@ -59,7 +87,7 @@ public class TimeEntryService {
         });
     }
 
-    public void checkIfDateIsInCorrectWeekOfYear(String week, LocalDate date) {
+    private void checkIfDateIsInCorrectWeekOfYear(String week, LocalDate date) {
         int weekNumber = Integer.parseInt(week.substring(6, 8));
         if (date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) != weekNumber) {
             log.error("Date is not in that week of the year.");
@@ -67,32 +95,6 @@ public class TimeEntryService {
         }
     }
 
-
-    public void saveWeekForUser(List<TimeEntryBo> timeEntryBoList) {
-        List<TimeEntryEntity> timeEntryEntityList = new ArrayList<>();
-        timeEntryBoList.forEach(x -> timeEntryEntityList.add(timeEntryMapper.fromBoToEntity(x)));
-        List<StatusEntity> statusEntities = statusRepository.findAll();
-        timeEntryEntityList.forEach(entry -> {
-            if (!timeEntryRepository.existsByProjectGuid(entry.getProjectGuid())) {
-                log.error("Project with guid" + entry.getProjectGuid() + " not found.");
-                throw new ProjectNotFoundException();
-            }
-            if (!timeEntryRepository.existsByUserGuid(entry.getUserGuid())) {
-                log.error("User with guid" + entry.getUserGuid() + "  not found.");
-                throw new UserNotFoundException();
-            }
-            verifyStatusNames(entry.getStatusEntity(), statusEntities);
-            verifyStatusAndHours(entry);
-        });
-        saveWeekTimeEntry(timeEntryEntityList);
-    }
-
-    private void saveWeekTimeEntry(List<TimeEntryEntity> timeEntryEntityList) {
-        timeEntryEntityList.forEach(entry -> {
-            entry.setStatusEntity(statusRepository.findByName(entry.getStatusEntity().getName()).get());
-            timeEntryRepository.save(entry);
-        });
-    }
 
     private void verifyStatusNames(StatusEntity statusEntity, List<StatusEntity> statusEntities) {
         List<StatusBo> statusBos = statusEntities.stream()
@@ -112,4 +114,22 @@ public class TimeEntryService {
         }
     }
 
+    private List<TimeEntryEntity> validateWeekTimeEntry(List<TimeEntryBo> timeEntryBoList) {
+        List<TimeEntryEntity> timeEntryEntityList = new ArrayList<>();
+        timeEntryBoList.forEach(x -> timeEntryEntityList.add(timeEntryMapper.fromBoToEntity(x)));
+        List<StatusEntity> statusEntities = statusRepository.findAll();
+        timeEntryEntityList.forEach(entry -> {
+            if (!timeEntryRepository.existsByProjectGuid(entry.getProjectGuid())) {
+                log.error("Project with guid" + entry.getProjectGuid() + " not found.");
+                throw new ProjectNotFoundException();
+            }
+            if (!timeEntryRepository.existsByUserGuid(entry.getUserGuid())) {
+                log.error("User with guid" + entry.getUserGuid() + "  not found.");
+                throw new UserNotFoundException();
+            }
+            verifyStatusNames(entry.getStatusEntity(), statusEntities);
+            verifyStatusAndHours(entry);
+        });
+        return timeEntryEntityList;
+    }
 }

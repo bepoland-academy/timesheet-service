@@ -1,7 +1,8 @@
 package pl.betse.beontime.users.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import pl.betse.beontime.users.service.TimeEntryService;
 import pl.betse.beontime.users.validation.CreateTimeEntry;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,14 +35,18 @@ public class WeekTimeEntryController {
     }
 
     @GetMapping("/{userGuid}/week/{weekNumber}")
-    public ResponseEntity<Resource<WeekTimeEntryBody>> getWeekForUser(
+    public ResponseEntity<Resources<WeekTimeEntryBody>> getWeekForUser(
             @PathVariable("userGuid") String userGuid,
             @PathVariable("weekNumber") String weekNumber) {
         checkWeekNumberFormat(weekNumber);
-        List<TimeEntryBo> timeEntryBoList = timeEntryService.findByUserGuidAndWeek(userGuid, weekNumber);
-        WeekTimeEntryBody weekTimeEntryBody = timeEntryMapper.fromTimeEntryBoToWeekTimeEntryBody(timeEntryBoList);
-        addLinks(weekTimeEntryBody, userGuid);
-        return ResponseEntity.ok(new Resource<>(weekTimeEntryBody));
+        List<List<TimeEntryBo>> timeEntryBoList = timeEntryService.findByUserGuidAndWeek(userGuid, weekNumber);
+        List<WeekTimeEntryBody> weekTimeEntryBodyList = new ArrayList<>();
+        timeEntryBoList.forEach(week -> {
+            weekTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToWeekTimeEntryBody(week));
+        });
+        URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
+        Link link = new Link(location.toString(), "self");
+        return ResponseEntity.ok(new Resources<>(weekTimeEntryBodyList, link));
     }
 
     @PostMapping("/{userGuid}/week/{weekNumber}")
@@ -48,14 +54,30 @@ public class WeekTimeEntryController {
             @RequestBody @Validated(CreateTimeEntry.class) WeekTimeEntryBody weekTimeEntryBody,
             @PathVariable("userGuid") String userGuid,
             @PathVariable("weekNumber") String weekNumber) {
+        List<TimeEntryBo> timeEntryBoList = prepareDataForService(weekTimeEntryBody, userGuid, weekNumber);
+        timeEntryService.saveWeekForUser(timeEntryBoList);
+        URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
+        return ResponseEntity.created(location).build();
+    }
+
+    @PutMapping("/{userGuid}/week/{weekNumber}")
+    public ResponseEntity editWeekForUser(
+            @RequestBody @Validated(CreateTimeEntry.class) WeekTimeEntryBody weekTimeEntryBody,
+            @PathVariable("userGuid") String userGuid,
+            @PathVariable("weekNumber") String weekNumber) {
+        List<TimeEntryBo> timeEntryBoList = prepareDataForService(weekTimeEntryBody, userGuid, weekNumber);
+        timeEntryService.editWeekHoursAndStatuses(timeEntryBoList, userGuid, weekNumber);
+        URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
+        return ResponseEntity.created(location).build();
+    }
+
+    private List<TimeEntryBo> prepareDataForService(@Validated(CreateTimeEntry.class) @RequestBody WeekTimeEntryBody weekTimeEntryBody, @PathVariable("userGuid") String userGuid, @PathVariable("weekNumber") String weekNumber) {
         checkWeekNumberFormat(weekNumber);
         List<TimeEntryBo> timeEntryBoList = weekTimeEntryBody.getWeekDays().stream()
                 .map(entry -> timeEntryMapper.fromWeekDayBodyToBo(entry, weekTimeEntryBody, userGuid, weekNumber))
                 .collect(Collectors.toList());
         timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, weekNumber);
-        timeEntryService.saveWeekForUser(timeEntryBoList);
-        URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
-        return ResponseEntity.created(location).build();
+        return timeEntryBoList;
     }
 
     private void addLinks(WeekTimeEntryBody weekTimeEntryBody, String userGuid) {

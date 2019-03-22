@@ -12,7 +12,10 @@ import java.util.Optional;
 
 @Repository
 public interface TimeEntryRepository extends JpaRepository<TimeEntryEntity, Long> {
-    List<TimeEntryEntity> findByUserGuidAndWeek(String guid, String week);
+
+    List<TimeEntryEntity> findByUserGuidAndWeek(String userGuid, String weekNumber);
+
+    List<TimeEntryEntity> findByUserGuidAndProjectGuidAndWeek(String userGuid, String projectGuid, String weekNumber);
 
     Optional<TimeEntryEntity> findByUserGuidAndProjectGuidAndEntryDate(String userGuid, String projectGuid, LocalDate entryDate);
 
