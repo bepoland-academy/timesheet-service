@@ -82,6 +82,11 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse("INCORRECT WEEK FORMAT OR NUMBER."), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler({TimeEntryNotFound.class})
+    public @ResponseBody
+    ResponseEntity<ErrorResponse> sendTimeEntryNotFoundMessage() {
+        return new ResponseEntity<>(new ErrorResponse("TIME ENTRY FOR USER AND WEEK NOT FOUND."), HttpStatus.NOT_FOUND);
+    }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {

@@ -19,7 +19,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MonthDayBody {
-
     @NotEmpty(groups = {CreateTimeEntry.class}, message = "Date can't be empty!")
     @NotNull(groups = {CreateTimeEntry.class}, message = "Date can't be null!")
     private String date;

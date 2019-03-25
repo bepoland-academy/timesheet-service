@@ -80,5 +80,4 @@ public abstract class TimeEntryMapper {
                 .comment(timeEntryBo.getStatus())
                 .build();
     }
-
 }
