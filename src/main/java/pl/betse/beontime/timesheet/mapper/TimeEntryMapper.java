@@ -71,4 +71,13 @@ public abstract class TimeEntryMapper {
 
     }
 
+    public MonthDayBody fromBoToMonthDayBody(TimeEntryBo timeEntryBo) {
+
+        return MonthDayBody.builder()
+                .date(timeEntryBo.getEntryDate().toString())
+                .hours(timeEntryBo.getHoursNumber())
+                .status(timeEntryBo.getStatus())
+                .comment(timeEntryBo.getStatus())
+                .build();
+    }
 }
