@@ -10,7 +10,4 @@ import pl.betse.beontime.timesheet.entity.StatusEntity;
 public abstract class StatusMapper {
 
     public abstract StatusBo fromEntityToBo(StatusEntity statusEntity);
-
-    public abstract StatusEntity fromBoToEntity(StatusBo statusBo);
-
 }

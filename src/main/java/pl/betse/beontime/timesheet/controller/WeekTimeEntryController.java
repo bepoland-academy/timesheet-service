@@ -41,9 +41,9 @@ public class WeekTimeEntryController {
         checkWeekNumberFormat(weekNumber);
         List<List<TimeEntryBo>> timeEntryBoList = timeEntryService.findByUserGuidAndWeek(userGuid, weekNumber);
         List<WeekTimeEntryBody> weekTimeEntryBodyList = new ArrayList<>();
-        timeEntryBoList.forEach(week -> {
-            weekTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToWeekTimeEntryBody(week));
-        });
+        timeEntryBoList.forEach(week ->
+            weekTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToWeekTimeEntryBody(week))
+        );
         URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
         Link link = new Link(location.toString(), "self");
         return ResponseEntity.ok(new Resources<>(weekTimeEntryBodyList, link));
@@ -83,16 +83,10 @@ public class WeekTimeEntryController {
                 .collect(Collectors.toList());
     }
 
-    private void addLinks(WeekTimeEntryBody weekTimeEntryBody, String userGuid) {
-        weekTimeEntryBody.add(linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekTimeEntryBody.getWeek())).withSelfRel());
-    }
-
     private void checkWeekNumberFormat(String week) {
         if (!week.matches("[1-3]\\d{3}-W[0-5]\\d")) {
             log.error("Incorrect week format or number");
             throw new IncorrectWeekFormatException();
         }
     }
-
-
 }

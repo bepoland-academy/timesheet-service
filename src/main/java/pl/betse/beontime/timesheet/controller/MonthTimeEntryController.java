@@ -26,7 +26,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @Slf4j
 @RestController
 @Validated(CreateTimeEntry.class)
-@RequestMapping("/manager")
+@RequestMapping("/managers")
 public class MonthTimeEntryController {
 
     private final TimeEntryMapper timeEntryMapper;
@@ -41,17 +41,15 @@ public class MonthTimeEntryController {
     public ResponseEntity<Resources<MonthTimeEntryBody>> getMonthForUser(@PathVariable("managerGuid") String managerGuid,
                                                                          @PathVariable("userGuid") String userGuid,
                                                                          @PathVariable("monthNumber") String month) {
-
         List<List<TimeEntryBo>> timeEntryBoList = timeEntryService.findByUserAndMonth(userGuid, prepareRequestDateForService(month));
         List<MonthTimeEntryBody> monthTimeEntryBodyList = new ArrayList<>();
-        timeEntryBoList.forEach(monthEntry -> {
-            monthTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToMonthTimeEntryBody(monthEntry));
-        });
+        timeEntryBoList.forEach(monthEntry ->
+            monthTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToMonthTimeEntryBody(monthEntry))
+        );
         URI location = linkTo(methodOn(MonthTimeEntryController.class).getMonthForUser(managerGuid, userGuid, month)).toUri();
         Link link = new Link(location.toString(), "self");
         return ResponseEntity.ok(new Resources<>(monthTimeEntryBodyList, link));
     }
-
 
     @PutMapping("/{managerGuid}/consultant/{userGuid}/month/{monthNumber}")
     public ResponseEntity editMonthForUser(@RequestBody @Validated(CreateTimeEntry.class) MonthTimeEntryBody monthTimeEntryBody,
@@ -60,21 +58,18 @@ public class MonthTimeEntryController {
                                            @PathVariable("monthNumber") String month,
                                            HttpServletRequest httpServletRequest) {
         LocalDate requestedDate = prepareRequestDateForService(month);
-        List<TimeEntryBo> timeEntryBoList = prepareDataForService(monthTimeEntryBody, month);
+        List<TimeEntryBo> timeEntryBoList = prepareDataForService(monthTimeEntryBody);
         timeEntryService.checkIfDateHasCorrectMonth(timeEntryBoList, requestedDate);
         timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
         timeEntryService.editMonthStatusesAndComments(timeEntryBoList, userGuid, requestedDate);
         return ResponseEntity.ok().build();
-
     }
 
-
-    private List<TimeEntryBo> prepareDataForService(MonthTimeEntryBody monthTimeEntryBody, String month) {
+    private List<TimeEntryBo> prepareDataForService(MonthTimeEntryBody monthTimeEntryBody) {
         return monthTimeEntryBody.getMonthDays().stream()
                 .map(entry -> timeEntryMapper.fromMonthDayBodyToBo(entry, monthTimeEntryBody))
                 .collect(Collectors.toList());
     }
-
 
     private void checkMonthNumberFormat(String month) {
         if (!month.matches("[1-3]\\d{3}-[0-1]\\d-01")) {
@@ -88,8 +83,6 @@ public class MonthTimeEntryController {
         checkMonthNumberFormat(month);
         return LocalDate.parse(month);
     }
-
-
 }
 
 

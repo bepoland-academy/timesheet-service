@@ -42,19 +42,14 @@ public class TimeEntryService {
         List<TimeEntryBo> timeEntryBoList = timeEntryRepository.findByUserGuidAndWeek(userGuid, week).stream()
                 .map(timeEntryMapper::fromEntityToBo)
                 .collect(Collectors.toList());
-
         List<String> projectNames = new ArrayList<>();
-        timeEntryBoList.forEach(entry -> {
-            if (!projectNames.contains(entry.getProjectGuid())) {
-                projectNames.add(entry.getProjectGuid());
-            }
-        });
+        resolveProjectGuidFromBoList(timeEntryBoList, projectNames);
         List<List<TimeEntryBo>> allProjectsForWeekList = new ArrayList<>();
-        projectNames.forEach(projectGuid -> {
-            allProjectsForWeekList.add(timeEntryRepository.findByUserGuidAndProjectGuidAndWeek(userGuid, projectGuid, week).stream()
-                    .map(timeEntryMapper::fromEntityToBo)
-                    .collect(Collectors.toList()));
-        });
+        projectNames.forEach(projectGuid ->
+                allProjectsForWeekList.add(timeEntryRepository.findByUserGuidAndProjectGuidAndWeek(userGuid, projectGuid, week).stream()
+                        .map(timeEntryMapper::fromEntityToBo)
+                        .collect(Collectors.toList()))
+        );
         if (allProjectsForWeekList.isEmpty()) {
             log.error("Time entry for user with guid = " + userGuid + " and week = " + week + " not exists.");
             throw new TimeEntryForUserWeekNotFound();
@@ -66,26 +61,19 @@ public class TimeEntryService {
         List<TimeEntryBo> timeEntryBoList = timeEntryRepository.findByUserGuidAndMonth(userGuid, requestDate).stream()
                 .map(timeEntryMapper::fromEntityToBo)
                 .collect(Collectors.toList());
-
-        List<String> projectsGuids = new ArrayList<>();
-        timeEntryBoList.forEach(entry -> {
-            if (!projectsGuids.contains(entry.getProjectGuid())) {
-                projectsGuids.add(entry.getProjectGuid());
-            }
-        });
+        List<String> projectsGuid = new ArrayList<>();
+        resolveProjectGuidFromBoList(timeEntryBoList, projectsGuid);
         List<List<TimeEntryBo>> allProjectForMonth = new ArrayList<>();
-        projectsGuids.forEach(projectGuid -> {
-            allProjectForMonth.add(timeEntryRepository.findByUserGuidAndProjectGuidAndMonth(userGuid, projectGuid, requestDate).stream()
-                    .map(timeEntryMapper::fromEntityToBo)
-                    .collect(Collectors.toList()));
-        });
+        projectsGuid.forEach(projectGuid ->
+                allProjectForMonth.add(timeEntryRepository.findByUserGuidAndProjectGuidAndMonth(userGuid, projectGuid, requestDate).stream()
+                        .map(timeEntryMapper::fromEntityToBo)
+                        .collect(Collectors.toList()))
+        );
         if (allProjectForMonth.isEmpty()) {
             log.error("Time entry for user with guid = " + userGuid + "and month " + requestDate + "not exists.");
             throw new TimeEntryForUserMonthNotFound();
         }
-
         return allProjectForMonth;
-
     }
 
     public void saveWeekForUser(List<TimeEntryBo> timeEntryBoList) {
@@ -126,7 +114,6 @@ public class TimeEntryService {
         });
     }
 
-
     public void checkIfTimeEntriesExist(List<TimeEntryBo> timeEntryBoList, String httpMethod) {
         timeEntryBoList.forEach(x -> {
             TimeEntryEntity timeEntryEntity = timeEntryMapper.fromBoToEntity(x);
@@ -152,7 +139,6 @@ public class TimeEntryService {
                 throw new BadWeekAndDateException();
             }
         });
-
     }
 
     public void checkIfDateHasCorrectMonth(List<TimeEntryBo> timeEntryBoList, LocalDate requestedDate) {
@@ -161,6 +147,14 @@ public class TimeEntryService {
             if (entry.getEntryDate().getMonthValue() != monthNumber) {
                 log.error("Date is not in that month of the year.");
                 throw new BadMonthAndDateException();
+            }
+        });
+    }
+
+    private void resolveProjectGuidFromBoList(List<TimeEntryBo> timeEntryBoList, List<String> projectsGuid) {
+        timeEntryBoList.forEach(entry -> {
+            if (!projectsGuid.contains(entry.getProjectGuid())) {
+                projectsGuid.add(entry.getProjectGuid());
             }
         });
     }

@@ -8,7 +8,6 @@ import pl.betse.beontime.timesheet.entity.TimeEntryEntity;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface TimeEntryRepository extends JpaRepository<TimeEntryEntity, Long> {
@@ -16,8 +15,6 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntryEntity, Long
     List<TimeEntryEntity> findByUserGuidAndWeek(String userGuid, String weekNumber);
 
     List<TimeEntryEntity> findByUserGuidAndProjectGuidAndWeek(String userGuid, String projectGuid, String weekNumber);
-
-    Optional<TimeEntryEntity> findByUserGuidAndProjectGuidAndEntryDate(String userGuid, String projectGuid, LocalDate entryDate);
 
     boolean existsByUserGuidAndProjectGuidAndEntryDate(String userGuid, String projectGuid, LocalDate entryDate);
 

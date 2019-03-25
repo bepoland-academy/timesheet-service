@@ -9,7 +9,6 @@ import java.util.UUID;
 @Named("guidMapper")
 @Mapper(componentModel = "spring")
 abstract class GuidMapper {
-
     @Named("mapGuid")
     String mapGuid(String guid) {
         if (StringUtils.isBlank(guid)) {

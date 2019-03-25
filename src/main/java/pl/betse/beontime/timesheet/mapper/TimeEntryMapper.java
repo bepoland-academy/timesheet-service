@@ -55,7 +55,7 @@ public abstract class TimeEntryMapper {
         return WeekTimeEntryBody.builder()
                 .week(!timeEntryBoList.isEmpty() ? timeEntryBoList.get(0).getWeek() : "no week - mapper!")
                 .projectId(!timeEntryBoList.isEmpty() ? timeEntryBoList.get(0).getProjectGuid() : "no guid - mapper!")
-                .weekDays(timeEntryBoList.stream().map(entry -> this.fromBoToWeekDayBody(entry)).collect(Collectors.toList()))
+                .weekDays(timeEntryBoList.stream().map(this::fromBoToWeekDayBody).collect(Collectors.toList()))
                 .build();
     }
 
@@ -64,7 +64,7 @@ public abstract class TimeEntryMapper {
                 .month(!timeEntryBoList.isEmpty() ? timeEntryBoList.get(0).getEntryDate().toString().substring(0,7) : "no month - mapper!")
                 .projectId(!timeEntryBoList.isEmpty() ? timeEntryBoList.get(0).getProjectGuid(): "noProjectGuid = mapper!")
                 .consultantId(!timeEntryBoList.isEmpty() ? timeEntryBoList.get(0).getUserGuid() : "noConsultantGuid = mapper")
-                .monthDays(timeEntryBoList.stream().map(entry -> this.fromBoToMonthDayBody(entry)).collect(Collectors.toList()))
+                .monthDays(timeEntryBoList.stream().map(this::fromBoToMonthDayBody).collect(Collectors.toList()))
                 .build();
     }
 
@@ -81,7 +81,6 @@ public abstract class TimeEntryMapper {
     }
 
     public MonthDayBody fromBoToMonthDayBody(TimeEntryBo timeEntryBo) {
-
         return MonthDayBody.builder()
                 .date(timeEntryBo.getEntryDate().toString())
                 .hours(timeEntryBo.getHoursNumber())
