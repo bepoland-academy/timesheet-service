@@ -22,12 +22,6 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse("Time entry for user in requested week has been not found."), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler({WeekDaysListIsEmptyException.class})
-    public @ResponseBody
-    ResponseEntity<ErrorResponse> sendWeekDaysListIsEmptyMessage() {
-        return new ResponseEntity<>(new ErrorResponse("WEEK DAYS SHOULDN'T BE AN EMPTY LIST!"), HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler({StatusNotFoundException.class})
     public @ResponseBody
     ResponseEntity<ErrorResponse> sendStatusNotFoundMessage() {
@@ -40,22 +34,10 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse("PROJECT GUID NOT FOUND"), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({WeekNotFoundException.class})
-    public @ResponseBody
-    ResponseEntity<ErrorResponse> sendWeekListNotFoundMessage() {
-        return new ResponseEntity<>(new ErrorResponse("LIST OF WEEK NOT FOUND"), HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler({UserNotFoundException.class})
     public @ResponseBody
     ResponseEntity<ErrorResponse> sendUserNotFoundMessage() {
         return new ResponseEntity<>(new ErrorResponse("USER NOT FOUND"), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler({IncorectWeekDaysException.class})
-    public @ResponseBody
-    ResponseEntity<ErrorResponse> sendIncorectNUmberOfDaysMessage() {
-        return new ResponseEntity<>(new ErrorResponse("NUMBER OF DAYS IN WEEK IS INCORRECT"), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({WrongStatusException.class})
@@ -86,6 +68,24 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
     public @ResponseBody
     ResponseEntity<ErrorResponse> sendTimeEntryNotFoundMessage() {
         return new ResponseEntity<>(new ErrorResponse("TIME ENTRY FOR USER AND WEEK NOT FOUND."), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({BadMonthAndDateException.class})
+    public @ResponseBody
+    ResponseEntity<ErrorResponse> sendBadMonthAndDateMessage() {
+        return new ResponseEntity<>(new ErrorResponse("DATE IS NOT IN THE MONTH OF THE YEAR."), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({IncorrectMonthFormatException.class})
+    public @ResponseBody
+    ResponseEntity<ErrorResponse> sendIncorrectMonthFormatMessage() {
+        return new ResponseEntity<>(new ErrorResponse("DATE FORMAT IS NOT CORRECT."), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({TimeEntryForUserMonthNotFound.class})
+    public @ResponseBody
+    ResponseEntity<ErrorResponse> sendTimeEntryForUserMonthNotFoundMessage() {
+        return new ResponseEntity<>(new ErrorResponse("TIME ENTRY FOR USER AND MONTH NOT FOUND."), HttpStatus.NOT_FOUND);
     }
 
     @Override

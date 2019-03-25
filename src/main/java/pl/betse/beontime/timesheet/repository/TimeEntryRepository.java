@@ -26,5 +26,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntryEntity, Long
     boolean existsByUserGuid(String userGuid);
 
     @Query("SELECT entry FROM TimeEntryEntity entry WHERE entry.userGuid=:userGuid AND MONTH(entry.entryDate)=MONTH(:localDate) AND YEAR(entry.entryDate)=YEAR(:localDate)")
-    List<TimeEntryEntity> findByUserGuidAndEntryDate(@Param("userGuid") String userGuid, @Param("localDate") LocalDate localDate);
+    List<TimeEntryEntity> findByUserGuidAndMonth(@Param("userGuid") String userGuid, @Param("localDate") LocalDate localDate);
+
+    @Query("SELECT entry FROM TimeEntryEntity entry WHERE entry.userGuid=:userGuid AND MONTH(entry.entryDate)=MONTH(:localDate) AND YEAR(entry.entryDate)=YEAR(:localDate) AND entry.projectGuid=:projectGuid")
+    List<TimeEntryEntity> findByUserGuidAndProjectGuidAndMonth(@Param("userGuid") String userGuid, @Param("projectGuid") String projectGuid, @Param("localDate") LocalDate localDate);
 }

@@ -10,7 +10,7 @@ import pl.betse.beontime.timesheet.bo.TimeEntryBo;
 import pl.betse.beontime.timesheet.exception.IncorrectWeekFormatException;
 import pl.betse.beontime.timesheet.mapper.TimeEntryMapper;
 import pl.betse.beontime.timesheet.model.WeekTimeEntryBody;
-import pl.betse.beontime.timesheet.service.WeekTimeEntryService;
+import pl.betse.beontime.timesheet.service.TimeEntryService;
 import pl.betse.beontime.timesheet.validation.CreateTimeEntry;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,11 +26,11 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @RestController
 @RequestMapping("/consultants")
 public class WeekTimeEntryController {
-    private final WeekTimeEntryService weekTimeEntryService;
+    private final TimeEntryService timeEntryService;
     private final TimeEntryMapper timeEntryMapper;
 
-    public WeekTimeEntryController(WeekTimeEntryService weekTimeEntryService, TimeEntryMapper timeEntryMapper) {
-        this.weekTimeEntryService = weekTimeEntryService;
+    public WeekTimeEntryController(TimeEntryService timeEntryService, TimeEntryMapper timeEntryMapper) {
+        this.timeEntryService = timeEntryService;
         this.timeEntryMapper = timeEntryMapper;
     }
 
@@ -39,7 +39,7 @@ public class WeekTimeEntryController {
             @PathVariable("userGuid") String userGuid,
             @PathVariable("weekNumber") String weekNumber) {
         checkWeekNumberFormat(weekNumber);
-        List<List<TimeEntryBo>> timeEntryBoList = weekTimeEntryService.findByUserGuidAndWeek(userGuid, weekNumber);
+        List<List<TimeEntryBo>> timeEntryBoList = timeEntryService.findByUserGuidAndWeek(userGuid, weekNumber);
         List<WeekTimeEntryBody> weekTimeEntryBodyList = new ArrayList<>();
         timeEntryBoList.forEach(week -> {
             weekTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToWeekTimeEntryBody(week));
@@ -56,8 +56,9 @@ public class WeekTimeEntryController {
             @PathVariable("weekNumber") String weekNumber,
             HttpServletRequest httpServletRequest) {
         List<TimeEntryBo> timeEntryBoList = prepareDataForService(weekTimeEntryBody, userGuid, weekNumber);
-        weekTimeEntryService.checkIfTimeEntriesExist(timeEntryBoList, weekNumber, httpServletRequest.getMethod());
-        weekTimeEntryService.saveWeekForUser(timeEntryBoList);
+        timeEntryService.checkIfDateIsInCorrectWeekOfYear(timeEntryBoList, weekNumber);
+        timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
+        timeEntryService.saveWeekForUser(timeEntryBoList);
         URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
         return ResponseEntity.created(location).build();
     }
@@ -69,8 +70,9 @@ public class WeekTimeEntryController {
             @PathVariable("weekNumber") String weekNumber,
             HttpServletRequest httpServletRequest) {
         List<TimeEntryBo> timeEntryBoList = prepareDataForService(weekTimeEntryBody, userGuid, weekNumber);
-        weekTimeEntryService.checkIfTimeEntriesExist(timeEntryBoList, weekNumber, httpServletRequest.getMethod());
-        weekTimeEntryService.editWeekHoursAndStatuses(timeEntryBoList, userGuid, weekNumber);
+        timeEntryService.checkIfDateIsInCorrectWeekOfYear(timeEntryBoList, weekNumber);
+        timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
+        timeEntryService.editWeekHoursAndStatuses(timeEntryBoList, userGuid, weekNumber);
         return ResponseEntity.ok().build();
     }
 

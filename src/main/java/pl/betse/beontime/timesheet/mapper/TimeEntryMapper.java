@@ -59,6 +59,15 @@ public abstract class TimeEntryMapper {
                 .build();
     }
 
+    public MonthTimeEntryBody fromTimeEntryBoToMonthTimeEntryBody(List<TimeEntryBo> timeEntryBoList){
+        return MonthTimeEntryBody.builder()
+                .month(!timeEntryBoList.isEmpty() ? timeEntryBoList.get(0).getEntryDate().toString().substring(0,7) : "no month - mapper!")
+                .projectId(!timeEntryBoList.isEmpty() ? timeEntryBoList.get(0).getProjectGuid(): "noProjectGuid = mapper!")
+                .consultantId(!timeEntryBoList.isEmpty() ? timeEntryBoList.get(0).getUserGuid() : "noConsultantGuid = mapper")
+                .monthDays(timeEntryBoList.stream().map(entry -> this.fromBoToMonthDayBody(entry)).collect(Collectors.toList()))
+                .build();
+    }
+
     public TimeEntryBo fromMonthDayBodyToBo(MonthDayBody monthDayBody, MonthTimeEntryBody monthTimeEntryBody) {
         return TimeEntryBo.builder()
                 .userGuid(monthTimeEntryBody.getConsultantId())
@@ -77,7 +86,7 @@ public abstract class TimeEntryMapper {
                 .date(timeEntryBo.getEntryDate().toString())
                 .hours(timeEntryBo.getHoursNumber())
                 .status(timeEntryBo.getStatus())
-                .comment(timeEntryBo.getStatus())
+                .comment(timeEntryBo.getComment())
                 .build();
     }
 }
