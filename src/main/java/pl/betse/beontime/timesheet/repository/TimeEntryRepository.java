@@ -12,9 +12,9 @@ import java.util.List;
 @Repository
 public interface TimeEntryRepository extends JpaRepository<TimeEntryEntity, Long> {
 
-    List<TimeEntryEntity> findByUserGuidAndWeek(String userGuid, String weekNumber);
+    List<TimeEntryEntity> findByUserGuidAndWeekOrderByEntryDate(String userGuid, String weekNumber);
 
-    List<TimeEntryEntity> findByUserGuidAndProjectGuidAndWeek(String userGuid, String projectGuid, String weekNumber);
+    List<TimeEntryEntity> findByUserGuidAndProjectGuidAndWeekOrderByEntryDate(String userGuid, String projectGuid, String weekNumber);
 
     boolean existsByUserGuidAndProjectGuidAndEntryDate(String userGuid, String projectGuid, LocalDate entryDate);
 
@@ -22,9 +22,9 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntryEntity, Long
 
     boolean existsByUserGuid(String userGuid);
 
-    @Query("SELECT entry FROM TimeEntryEntity entry WHERE entry.userGuid=:userGuid AND MONTH(entry.entryDate)=MONTH(:localDate) AND YEAR(entry.entryDate)=YEAR(:localDate)")
+    @Query("SELECT entry FROM TimeEntryEntity entry WHERE entry.userGuid=:userGuid AND MONTH(entry.entryDate)=MONTH(:localDate) AND YEAR(entry.entryDate)=YEAR(:localDate) ORDER BY entry.entryDate")
     List<TimeEntryEntity> findByUserGuidAndMonth(@Param("userGuid") String userGuid, @Param("localDate") LocalDate localDate);
 
-    @Query("SELECT entry FROM TimeEntryEntity entry WHERE entry.userGuid=:userGuid AND MONTH(entry.entryDate)=MONTH(:localDate) AND YEAR(entry.entryDate)=YEAR(:localDate) AND entry.projectGuid=:projectGuid")
+    @Query("SELECT entry FROM TimeEntryEntity entry WHERE entry.userGuid=:userGuid AND MONTH(entry.entryDate)=MONTH(:localDate) AND YEAR(entry.entryDate)=YEAR(:localDate) AND entry.projectGuid=:projectGuid ORDER BY entry.entryDate")
     List<TimeEntryEntity> findByUserGuidAndProjectGuidAndMonth(@Param("userGuid") String userGuid, @Param("projectGuid") String projectGuid, @Param("localDate") LocalDate localDate);
 }
