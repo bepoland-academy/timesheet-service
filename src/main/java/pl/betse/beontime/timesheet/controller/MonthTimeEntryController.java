@@ -57,14 +57,14 @@ public class MonthTimeEntryController {
                                            @PathVariable("monthNumber") String month,
                                            HttpServletRequest httpServletRequest) {
         LocalDate requestedDate = prepareRequestDateForService(month);
-        monthTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(monthTimeEntryBody -> {
+        monthTimeEntryBodyList.getMonthTimeEntryBodyList().forEach(monthTimeEntryBody -> {
             List<TimeEntryBo> timeEntryBoList = prepareDataForService(monthTimeEntryBody);
             timeEntryService.checkIfDateHasCorrectMonth(timeEntryBoList, requestedDate);
             timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
             timeEntryService.verifyThatWeekDatesAreUnique(timeEntryBoList);
             timeEntryService.verifyStatusesBeforeAddingComment(timeEntryBoList);
         });
-        monthTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(monthTimeEntryBody -> {
+        monthTimeEntryBodyList.getMonthTimeEntryBodyList().forEach(monthTimeEntryBody -> {
             List<TimeEntryBo> timeEntryBoList = prepareDataForService(monthTimeEntryBody);
             timeEntryService.editMonthStatusesAndComments(timeEntryBoList, userGuid, requestedDate);
         });
