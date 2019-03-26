@@ -17,5 +17,5 @@ import java.util.List;
 public class MonthTimeEntryBodyList {
     @NotNull(message = "Month days can't be null!")
     @NotEmpty(message = "Month days can't be empty!")
-    List<@Valid MonthTimeEntryBody> weekTimeEntryBodyList = new ArrayList<>();
+    List<@Valid MonthTimeEntryBody> monthTimeEntryBodyList = new ArrayList<>();
 }

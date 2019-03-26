@@ -47,7 +47,7 @@ public abstract class TimeEntryMapper {
                 .hoursNumber(weekDayBody.getHours())
                 .comment(weekDayBody.getComment())
                 .week(weekNumber)
-                .status(weekDayBody.getStatus())
+                .status(weekDayBody.getStatus().toUpperCase())
                 .build();
     }
 
@@ -74,7 +74,7 @@ public abstract class TimeEntryMapper {
                 .projectGuid(monthTimeEntryBody.getProjectId())
                 .entryDate(LocalDate.parse(monthDayBody.getDate()))
                 .hoursNumber(monthDayBody.getHours())
-                .status(monthDayBody.getStatus())
+                .status(monthDayBody.getStatus().toUpperCase())
                 .comment(monthDayBody.getComment())
                 .build();
 
