@@ -41,16 +41,18 @@ public class TimeEntryService {
     }
 
     public List<List<TimeEntryBo>> findByUserGuidAndWeek(String userGuid, String week) {
+        List<List<TimeEntryBo>> allProjectsForWeekList = new ArrayList<>();
         List<TimeEntryBo> timeEntryBoList = timeEntryRepository.findByUserGuidAndWeekOrderByEntryDate(userGuid, week).stream()
                 .map(timeEntryMapper::fromEntityToBo)
                 .collect(Collectors.toList());
-        List<String> projectNames = resolveProjectGuidFromBoList(timeEntryBoList);
-        List<List<TimeEntryBo>> allProjectsForWeekList = new ArrayList<>();
-        projectNames.forEach(projectGuid ->
-                allProjectsForWeekList.add(timeEntryRepository.findByUserGuidAndProjectGuidAndWeekOrderByEntryDate(userGuid, projectGuid, week).stream()
-                        .map(timeEntryMapper::fromEntityToBo)
-                        .collect(Collectors.toList()))
-        );
+        List<String> projectGuidList = resolveProjectGuidFromBoList(timeEntryBoList);
+        for (String projectGuid : projectGuidList) {
+            allProjectsForWeekList.add(
+                    timeEntryRepository.findByUserGuidAndProjectGuidAndWeekOrderByEntryDate(userGuid, projectGuid, week).stream()
+                            .map(timeEntryMapper::fromEntityToBo)
+                            .collect(Collectors.toList())
+            );
+        }
         if (allProjectsForWeekList.isEmpty()) {
             log.error("Time entry for user with guid = " + userGuid + " and week = " + week + " not exists.");
             throw new TimeEntryForUserWeekNotFound();
@@ -59,16 +61,18 @@ public class TimeEntryService {
     }
 
     public List<List<TimeEntryBo>> findByUserGuidAndMonth(String userGuid, LocalDate requestDate) {
+        List<List<TimeEntryBo>> allProjectForMonth = new ArrayList<>();
         List<TimeEntryBo> timeEntryBoList = timeEntryRepository.findByUserGuidAndMonth(userGuid, requestDate).stream()
                 .map(timeEntryMapper::fromEntityToBo)
                 .collect(Collectors.toList());
-        List<String> projectsGuid = resolveProjectGuidFromBoList(timeEntryBoList);
-        List<List<TimeEntryBo>> allProjectForMonth = new ArrayList<>();
-        projectsGuid.forEach(projectGuid ->
-                allProjectForMonth.add(timeEntryRepository.findByUserGuidAndProjectGuidAndMonth(userGuid, projectGuid, requestDate).stream()
-                        .map(timeEntryMapper::fromEntityToBo)
-                        .collect(Collectors.toList()))
-        );
+        List<String> projectsGuidList = resolveProjectGuidFromBoList(timeEntryBoList);
+        for (String projectGuid : projectsGuidList) {
+            allProjectForMonth.add(
+                    timeEntryRepository.findByUserGuidAndProjectGuidAndMonth(userGuid, projectGuid, requestDate).stream()
+                            .map(timeEntryMapper::fromEntityToBo)
+                            .collect(Collectors.toList())
+            );
+        }
         if (allProjectForMonth.isEmpty()) {
             log.error("Time entry for user with guid = " + userGuid + "and month " + requestDate + "not exists.");
             throw new TimeEntryForUserMonthNotFound();
