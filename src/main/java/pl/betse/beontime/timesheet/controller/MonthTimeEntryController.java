@@ -10,13 +10,13 @@ import pl.betse.beontime.timesheet.bo.TimeEntryBo;
 import pl.betse.beontime.timesheet.exception.IncorrectMonthFormatException;
 import pl.betse.beontime.timesheet.mapper.TimeEntryMapper;
 import pl.betse.beontime.timesheet.model.MonthTimeEntryBody;
+import pl.betse.beontime.timesheet.model.MonthTimeEntryBodyList;
 import pl.betse.beontime.timesheet.service.TimeEntryService;
 import pl.betse.beontime.timesheet.validation.CreateTimeEntry;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,32 +37,37 @@ public class MonthTimeEntryController {
         this.timeEntryService = timeEntryService;
     }
 
-    @GetMapping("/{managerGuid}/consultant/{userGuid}/month/{monthNumber}")
+    @GetMapping("/{managerGuid}/consultants/{userGuid}/months/{monthNumber}")
     public ResponseEntity<Resources<MonthTimeEntryBody>> getMonthForUser(@PathVariable("managerGuid") String managerGuid,
                                                                          @PathVariable("userGuid") String userGuid,
                                                                          @PathVariable("monthNumber") String month) {
-        List<List<TimeEntryBo>> timeEntryBoList = timeEntryService.findByUserAndMonth(userGuid, prepareRequestDateForService(month));
-        List<MonthTimeEntryBody> monthTimeEntryBodyList = new ArrayList<>();
-        timeEntryBoList.forEach(monthEntry ->
-                monthTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToMonthTimeEntryBody(monthEntry))
-        );
+        List<List<TimeEntryBo>> timeEntryBoList = timeEntryService.findByUserGuidAndMonth(userGuid, prepareRequestDateForService(month));
+        List<MonthTimeEntryBody> monthTimeEntryBodyList = timeEntryBoList.stream()
+                .map(timeEntryMapper::fromTimeEntryBoToMonthTimeEntryBody)
+                .collect(Collectors.toList());
         URI location = linkTo(methodOn(MonthTimeEntryController.class).getMonthForUser(managerGuid, userGuid, month)).toUri();
         Link link = new Link(location.toString(), "self");
         return ResponseEntity.ok(new Resources<>(monthTimeEntryBodyList, link));
     }
 
-    @PutMapping("/{managerGuid}/consultant/{userGuid}/month/{monthNumber}")
-    public ResponseEntity editMonthForUser(@RequestBody @Validated(CreateTimeEntry.class) MonthTimeEntryBody monthTimeEntryBody,
+    @PutMapping("/{managerGuid}/consultants/{userGuid}/months/{monthNumber}")
+    public ResponseEntity editMonthForUser(@RequestBody @Validated(CreateTimeEntry.class) MonthTimeEntryBodyList monthTimeEntryBodyList,
                                            @PathVariable("managerGuid") String managerGuid,
                                            @PathVariable("userGuid") String userGuid,
                                            @PathVariable("monthNumber") String month,
                                            HttpServletRequest httpServletRequest) {
         LocalDate requestedDate = prepareRequestDateForService(month);
-        List<TimeEntryBo> timeEntryBoList = prepareDataForService(monthTimeEntryBody);
-        timeEntryService.checkIfDateHasCorrectMonth(timeEntryBoList, requestedDate);
-        timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
-        timeEntryService.verifyStatusesBeforeAddingComment(timeEntryBoList);
-        timeEntryService.editMonthStatusesAndComments(timeEntryBoList, userGuid, requestedDate);
+        monthTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(monthTimeEntryBody -> {
+            List<TimeEntryBo> timeEntryBoList = prepareDataForService(monthTimeEntryBody);
+            timeEntryService.checkIfDateHasCorrectMonth(timeEntryBoList, requestedDate);
+            timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
+            timeEntryService.verifyThatWeekDatesAreUnique(timeEntryBoList);
+            timeEntryService.verifyStatusesBeforeAddingComment(timeEntryBoList);
+        });
+        monthTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(monthTimeEntryBody -> {
+            List<TimeEntryBo> timeEntryBoList = prepareDataForService(monthTimeEntryBody);
+            timeEntryService.editMonthStatusesAndComments(timeEntryBoList, userGuid, requestedDate);
+        });
         return ResponseEntity.ok().build();
     }
 

@@ -88,6 +88,12 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse("TIME ENTRY FOR USER AND MONTH NOT FOUND."), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler({DoubledDateException.class})
+    public @ResponseBody
+    ResponseEntity<ErrorResponse> sendDoubledDateExceptionMessage() {
+        return new ResponseEntity<>(new ErrorResponse("DATE CANNOT BE DOUBLED FOR ONE MONTH OR WEEK IN ONE PROJECT DURING ENTRY CREATION OR EDITION"), HttpStatus.BAD_REQUEST);
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         StringBuilder errors = new StringBuilder();
