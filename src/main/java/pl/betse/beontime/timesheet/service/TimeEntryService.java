@@ -13,7 +13,6 @@ import pl.betse.beontime.timesheet.mapper.TimeEntryMapper;
 import pl.betse.beontime.timesheet.repository.StatusRepository;
 import pl.betse.beontime.timesheet.repository.TimeEntryRepository;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
 import java.util.ArrayList;
@@ -28,7 +27,8 @@ public class TimeEntryService {
     private final TimeEntryMapper timeEntryMapper;
     private final StatusRepository statusRepository;
     private final StatusMapper statusMapper;
-    private final String NEW_STATUS = "NEW";
+    private final String SAVED_STATUS = "SAVED";
+    private final String REJECTED_STATUS = "REJECTED";
 
 
     public TimeEntryService(TimeEntryRepository timeEntryRepository, TimeEntryMapper timeEntryMapper, StatusRepository statusRepository, StatusMapper statusMapper) {
@@ -99,6 +99,18 @@ public class TimeEntryService {
         });
     }
 
+    public void deleteWholeWeek(List<TimeEntryBo> timeEntryBoList, String userGuid, String weekNumber) {
+        List<TimeEntryEntity> incomingList = validateWeekTimeEntry(timeEntryBoList);
+        List<TimeEntryEntity> databaseList = timeEntryRepository.findByUserGuidAndWeek(userGuid, weekNumber);
+        databaseList.forEach(databaseEntry -> {
+            for (TimeEntryEntity incomingEntity : incomingList) {
+                if (databaseEntry.getEntryDate().equals(incomingEntity.getEntryDate())) {
+                    timeEntryRepository.delete(databaseEntry);
+                }
+            }
+        });
+    }
+
     public void editMonthStatusesAndComments(List<TimeEntryBo> timeEntryBoList, String userGuid, LocalDate localDate) {
         List<TimeEntryEntity> incomingList = validateWeekTimeEntry(timeEntryBoList);
         List<TimeEntryEntity> databaseList = timeEntryRepository.findByUserGuidAndMonth(userGuid, localDate);
@@ -122,7 +134,7 @@ public class TimeEntryService {
                     log.error("Time entry for user " + timeEntryEntity.getUserGuid() + " and project " + timeEntryEntity.getProjectGuid() + " with date " + timeEntryEntity.getEntryDate() + " currently exist in database!");
                     throw new TimeEntryExistsInDatabase();
                 }
-            } else if (httpMethod.equalsIgnoreCase(RequestMethod.PUT.name())) {
+            } else if (httpMethod.equalsIgnoreCase(RequestMethod.PUT.name()) || httpMethod.equalsIgnoreCase(RequestMethod.DELETE.name())) {
                 if (!timeEntryRepository.existsByUserGuidAndProjectGuidAndEntryDate(timeEntryEntity.getUserGuid(), timeEntryEntity.getProjectGuid(), timeEntryEntity.getEntryDate())) {
                     log.error("Time entry for user " + timeEntryEntity.getUserGuid() + " and project " + timeEntryEntity.getProjectGuid() + " with date " + timeEntryEntity.getEntryDate() + " currently NOT exist in database!");
                     throw new TimeEntryNotFound();
@@ -151,6 +163,36 @@ public class TimeEntryService {
         });
     }
 
+    public void verifyStatusesBeforeCreatingNewEntry(List<TimeEntryBo> timeEntryBoList) {
+        timeEntryBoList.forEach(entry -> {
+            if (!entry.getStatus().equalsIgnoreCase(SAVED_STATUS)) {
+                String message = ": Only entries with '" + SAVED_STATUS + "' status can be created as new.";
+                log.error(message);
+                throw new WrongStatusException(message);
+            }
+        });
+    }
+
+    public void verifyStatusesBeforeDeleting(List<TimeEntryBo> timeEntryBoList) {
+        timeEntryBoList.forEach(entry -> {
+            if (!entry.getStatus().equalsIgnoreCase(SAVED_STATUS)) {
+                String message = ": Only entries with '" + SAVED_STATUS + "' status can be deleted.";
+                log.error(message);
+                throw new WrongStatusException(message);
+            }
+        });
+    }
+
+    public void verifyStatusesBeforeAddingComment(List<TimeEntryBo> timeEntryBoList) {
+        timeEntryBoList.forEach(entry -> {
+            if (!entry.getStatus().equalsIgnoreCase(REJECTED_STATUS) && !entry.getComment().isEmpty()) {
+                String message = ": Only entries with '" + REJECTED_STATUS + "' status can be commented.";
+                log.error(message);
+                throw new WrongStatusException(message);
+            }
+        });
+    }
+
     private void resolveProjectGuidFromBoList(List<TimeEntryBo> timeEntryBoList, List<String> projectsGuid) {
         timeEntryBoList.forEach(entry -> {
             if (!projectsGuid.contains(entry.getProjectGuid())) {
@@ -169,13 +211,6 @@ public class TimeEntryService {
         }
     }
 
-    private void verifyStatusAndHours(TimeEntryEntity timeEntryEntity) {
-        if (timeEntryEntity.getStatusEntity().getName().equalsIgnoreCase(NEW_STATUS) && timeEntryEntity.getHoursNumber().compareTo(new BigDecimal(0)) > 0) {
-            String message = ": " + NEW_STATUS + " should have 0 hours ONLY!";
-            log.error(message);
-            throw new WrongStatusException(message);
-        }
-    }
 
     private List<TimeEntryEntity> validateWeekTimeEntry(List<TimeEntryBo> timeEntryBoList) {
         List<TimeEntryEntity> timeEntryEntityList = new ArrayList<>();
@@ -191,8 +226,8 @@ public class TimeEntryService {
                 throw new UserNotFoundException();
             }
             verifyStatusNames(entry.getStatusEntity(), statusEntities);
-            verifyStatusAndHours(entry);
         });
         return timeEntryEntityList;
     }
+
 }

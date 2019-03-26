@@ -44,7 +44,7 @@ public class MonthTimeEntryController {
         List<List<TimeEntryBo>> timeEntryBoList = timeEntryService.findByUserAndMonth(userGuid, prepareRequestDateForService(month));
         List<MonthTimeEntryBody> monthTimeEntryBodyList = new ArrayList<>();
         timeEntryBoList.forEach(monthEntry ->
-            monthTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToMonthTimeEntryBody(monthEntry))
+                monthTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToMonthTimeEntryBody(monthEntry))
         );
         URI location = linkTo(methodOn(MonthTimeEntryController.class).getMonthForUser(managerGuid, userGuid, month)).toUri();
         Link link = new Link(location.toString(), "self");
@@ -61,6 +61,7 @@ public class MonthTimeEntryController {
         List<TimeEntryBo> timeEntryBoList = prepareDataForService(monthTimeEntryBody);
         timeEntryService.checkIfDateHasCorrectMonth(timeEntryBoList, requestedDate);
         timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
+        timeEntryService.verifyStatusesBeforeAddingComment(timeEntryBoList);
         timeEntryService.editMonthStatusesAndComments(timeEntryBoList, userGuid, requestedDate);
         return ResponseEntity.ok().build();
     }

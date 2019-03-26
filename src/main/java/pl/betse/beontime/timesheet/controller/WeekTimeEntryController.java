@@ -42,7 +42,7 @@ public class WeekTimeEntryController {
         List<List<TimeEntryBo>> timeEntryBoList = timeEntryService.findByUserGuidAndWeek(userGuid, weekNumber);
         List<WeekTimeEntryBody> weekTimeEntryBodyList = new ArrayList<>();
         timeEntryBoList.forEach(week ->
-            weekTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToWeekTimeEntryBody(week))
+                weekTimeEntryBodyList.add(timeEntryMapper.fromTimeEntryBoToWeekTimeEntryBody(week))
         );
         URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
         Link link = new Link(location.toString(), "self");
@@ -58,6 +58,7 @@ public class WeekTimeEntryController {
         List<TimeEntryBo> timeEntryBoList = prepareDataForService(weekTimeEntryBody, userGuid, weekNumber);
         timeEntryService.checkIfDateIsInCorrectWeekOfYear(timeEntryBoList, weekNumber);
         timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
+        timeEntryService.verifyStatusesBeforeCreatingNewEntry(timeEntryBoList);
         timeEntryService.saveWeekForUser(timeEntryBoList);
         URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
         return ResponseEntity.created(location).build();
@@ -72,9 +73,25 @@ public class WeekTimeEntryController {
         List<TimeEntryBo> timeEntryBoList = prepareDataForService(weekTimeEntryBody, userGuid, weekNumber);
         timeEntryService.checkIfDateIsInCorrectWeekOfYear(timeEntryBoList, weekNumber);
         timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
+        timeEntryService.verifyStatusesBeforeAddingComment(timeEntryBoList);
         timeEntryService.editWeekHoursAndStatuses(timeEntryBoList, userGuid, weekNumber);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/{userGuid}/week/{weekNumber}")
+    public ResponseEntity deleteWeekForUser(@RequestBody @Validated(CreateTimeEntry.class) WeekTimeEntryBody weekTimeEntryBody,
+                                            @PathVariable("userGuid") String userGuid,
+                                            @PathVariable("weekNumber") String weekNumber,
+                                            HttpServletRequest httpServletRequest) {
+        List<TimeEntryBo> timeEntryBoList = prepareDataForService(weekTimeEntryBody, userGuid, weekNumber);
+        timeEntryService.checkIfDateIsInCorrectWeekOfYear(timeEntryBoList, weekNumber);
+        timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
+        timeEntryService.verifyStatusesBeforeDeleting(timeEntryBoList);
+        timeEntryService.deleteWholeWeek(timeEntryBoList, userGuid, weekNumber);
+
+        return ResponseEntity.ok().build();
+    }
+
 
     private List<TimeEntryBo> prepareDataForService(@Validated(CreateTimeEntry.class) @RequestBody WeekTimeEntryBody weekTimeEntryBody, @PathVariable("userGuid") String userGuid, @PathVariable("weekNumber") String weekNumber) {
         checkWeekNumberFormat(weekNumber);

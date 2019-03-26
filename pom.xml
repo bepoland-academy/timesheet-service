@@ -37,9 +37,9 @@
     <dependencies>
         <!--Be dependencies-->
         <dependency>
-        <groupId>pl.betse.beontime</groupId>
-        <artifactId>security-library</artifactId>
-        <version>${security-library.version}</version>
+            <groupId>pl.betse.beontime</groupId>
+            <artifactId>security-library</artifactId>
+            <version>${security-library.version}</version>
         </dependency>
 
         <!--Spring dependencies-->
