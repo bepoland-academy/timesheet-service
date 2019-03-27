@@ -55,7 +55,9 @@ public class WeekTimeEntryController {
             @PathVariable("weekNumber") String weekNumber,
             HttpServletRequest httpServletRequest) {
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
-            List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(userGuid, weekNumber, httpServletRequest, weekTimeEntryBody);
+            List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(
+                    userGuid,
+                    weekNumber, httpServletRequest, weekTimeEntryBody);
             timeEntryService.verifyStatusesBeforeCreatingNewEntry(timeEntryBoList);
         });
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
@@ -73,7 +75,10 @@ public class WeekTimeEntryController {
             @PathVariable("weekNumber") String weekNumber,
             HttpServletRequest httpServletRequest) {
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
-            List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(userGuid, weekNumber, httpServletRequest, weekTimeEntryBody);
+            List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(userGuid,
+                    weekNumber,
+                    httpServletRequest,
+                    weekTimeEntryBody);
             timeEntryService.verifyStatusesBeforeAddingComment(timeEntryBoList);
         });
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
@@ -89,7 +94,10 @@ public class WeekTimeEntryController {
                                             @PathVariable("weekNumber") String weekNumber,
                                             HttpServletRequest httpServletRequest) {
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
-            List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(userGuid, weekNumber, httpServletRequest, weekTimeEntryBody);
+            List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(userGuid,
+                    weekNumber,
+                    httpServletRequest,
+                    weekTimeEntryBody);
             timeEntryService.verifyStatusesBeforeDeleting(timeEntryBoList);
         });
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
@@ -99,7 +107,10 @@ public class WeekTimeEntryController {
         return ResponseEntity.ok().build();
     }
 
-    private List<TimeEntryBo> getTimeEntryBosWithBasicVerification(String userGuid, String weekNumber, HttpServletRequest httpServletRequest, WeekTimeEntryBody weekTimeEntryBody) {
+    private List<TimeEntryBo> getTimeEntryBosWithBasicVerification(
+            String userGuid,
+            String weekNumber,
+            HttpServletRequest httpServletRequest, WeekTimeEntryBody weekTimeEntryBody) {
         List<TimeEntryBo> timeEntryBoList = mapWeekTimeEntryBodyToBoList(weekTimeEntryBody, userGuid, weekNumber);
         timeEntryService.checkIfDateIsInCorrectWeekOfYear(timeEntryBoList, weekNumber);
         timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
@@ -114,6 +125,7 @@ public class WeekTimeEntryController {
                 .map(entry -> timeEntryMapper.fromWeekDayBodyToBo(entry, weekTimeEntryBody, userGuid, weekNumber))
                 .collect(Collectors.toList());
     }
+
 
     private void checkWeekNumberFormat(String week) {
         if (!week.matches("[1-3]\\d{3}-W[0-5]\\d")) {
