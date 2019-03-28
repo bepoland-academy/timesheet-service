@@ -1,6 +1,7 @@
 package pl.betse.beontime.timesheet.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import pl.betse.beontime.timesheet.validation.CreateTimeEntry;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,9 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 public class WeekTimeEntryController {
     private final TimeEntryService timeEntryService;
     private final TimeEntryMapper timeEntryMapper;
+
+    @Value("${api-prefix}")
+    private String API_PREFIX;
 
     public WeekTimeEntryController(TimeEntryService timeEntryService, TimeEntryMapper timeEntryMapper) {
         this.timeEntryService = timeEntryService;
@@ -43,8 +48,7 @@ public class WeekTimeEntryController {
         List<WeekTimeEntryBody> weekTimeEntryBodyList = timeEntryBoList.stream()
                 .map(timeEntryMapper::fromTimeEntryBoToWeekTimeEntryBody)
                 .collect(Collectors.toList());
-        URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
-        Link link = new Link(location.toString(), "self");
+        Link link = constructLink(userGuid, weekNumber);
         return ResponseEntity.ok(new Resources<>(weekTimeEntryBodyList, link));
     }
 
@@ -53,7 +57,7 @@ public class WeekTimeEntryController {
             @RequestBody @Validated(CreateTimeEntry.class) WeekTimeEntryBodyList weekTimeEntryBodyList,
             @PathVariable("userGuid") String userGuid,
             @PathVariable("weekNumber") String weekNumber,
-            HttpServletRequest httpServletRequest) {
+            HttpServletRequest httpServletRequest) throws URISyntaxException {
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
             List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(
                     userGuid,
@@ -65,7 +69,7 @@ public class WeekTimeEntryController {
             timeEntryService.saveWeekForUser(timeEntryBoList);
         });
         URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
-        return ResponseEntity.created(location).build();
+        return ResponseEntity.created(new URI(API_PREFIX + location.getPath())).build();
     }
 
     @PutMapping("/{userGuid}/weeks/{weekNumber}")
@@ -132,5 +136,10 @@ public class WeekTimeEntryController {
             log.error("Incorrect week format or number");
             throw new IncorrectWeekFormatException();
         }
+    }
+
+    private Link constructLink(String userGuid, String weekNumber) {
+        URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
+        return new Link(API_PREFIX + location.getPath()).withSelfRel();
     }
 }
