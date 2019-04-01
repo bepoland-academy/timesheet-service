@@ -60,6 +60,10 @@ public class TimeEntryService {
         return allProjectsForWeekList;
     }
 
+    public boolean checkIfProjectHasAnyEntries(String projectGuid){
+        return timeEntryRepository.existsByProjectGuid(projectGuid);
+    }
+
     public List<List<TimeEntryBo>> findByUserGuidAndMonth(String userGuid, LocalDate requestDate) {
         List<List<TimeEntryBo>> allProjectForMonth = new ArrayList<>();
         List<TimeEntryBo> timeEntryBoList = timeEntryRepository.findByUserGuidAndMonth(userGuid, requestDate).stream()
@@ -229,7 +233,7 @@ public class TimeEntryService {
                 .collect(Collectors.toList());
         List<StatusEntity> statusEntities = statusRepository.findAll();
         for (TimeEntryEntity entry : timeEntryEntityList) {
-            if (!timeEntryRepository.existsByProjectGuid(entry.getProjectGuid())) {
+            if (timeEntryRepository.existsByProjectGuid(entry.getProjectGuid())) {
                 log.error("Project with guid" + entry.getProjectGuid() + " not found.");
                 throw new ProjectNotFoundException();
             }
