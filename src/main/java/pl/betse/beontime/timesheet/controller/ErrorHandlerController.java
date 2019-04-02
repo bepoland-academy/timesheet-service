@@ -19,7 +19,7 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
     @ExceptionHandler({TimeEntryForUserWeekNotFound.class})
     public @ResponseBody
     ResponseEntity<ErrorResponse> sendTimeEntryForUserNotFoundMessage() {
-        return new ResponseEntity<>(new ErrorResponse("TIME ENTRY FOR USER IN REQUESTED WEEK HAS BEEN NOT FOUND."), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new ErrorResponse("TIME ENTRY FOR USER IN REQUESTED WEEK HAS BEEN NOT FOUND."), HttpStatus.OK);
     }
 
     @ExceptionHandler({StatusNotFoundException.class})
@@ -85,7 +85,7 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
     @ExceptionHandler({TimeEntryForUserMonthNotFound.class})
     public @ResponseBody
     ResponseEntity<ErrorResponse> sendTimeEntryForUserMonthNotFoundMessage() {
-        return new ResponseEntity<>(new ErrorResponse("TIME ENTRY FOR USER AND MONTH NOT FOUND."), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new ErrorResponse("TIME ENTRY FOR USER AND MONTH NOT FOUND."), HttpStatus.OK);
     }
 
     @ExceptionHandler({DoubledDateException.class})

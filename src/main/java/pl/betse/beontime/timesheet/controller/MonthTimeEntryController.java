@@ -1,6 +1,7 @@
 package pl.betse.beontime.timesheet.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +34,10 @@ public class MonthTimeEntryController {
     private final TimeEntryService timeEntryService;
     private final DateChecker dateChecker;
 
-    public MonthTimeEntryController(TimeEntryMapper timeEntryMapper, TimeEntryService timeEntryService, DateChecker dateChecker) {
+    @Value("${api-prefix}")
+    private String API_PREFIX;
+
+    public MonthTimeEntryController(TimeEntryMapper timeEntryMapper, TimeEntryService timeEntryService) {
         this.timeEntryMapper = timeEntryMapper;
         this.timeEntryService = timeEntryService;
         this.dateChecker = dateChecker;
@@ -101,7 +105,23 @@ public class MonthTimeEntryController {
                 .collect(Collectors.toList());
     }
 
+    private void checkMonthNumberFormat(String month) {
+        if (!month.matches("[1-3]\\d{3}-[0-1]\\d-01")) {
+            log.error("Incorrect month format or number");
+            throw new IncorrectMonthFormatException();
+        }
+    }
 
+    private LocalDate prepareRequestDateForService(String month) {
+        month += "-01";
+        checkMonthNumberFormat(month);
+        return LocalDate.parse(month);
+    }
+
+    private Link constructLink(String managerGuid, String userGuid, String monthNumber) {
+        URI location = linkTo(methodOn(MonthTimeEntryController.class).getMonthForUser(managerGuid, userGuid, monthNumber)).toUri();
+        return new Link(API_PREFIX + location.getPath()).withSelfRel();
+    }
 }
 
 
