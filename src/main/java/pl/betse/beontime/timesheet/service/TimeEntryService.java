@@ -160,7 +160,8 @@ public class TimeEntryService {
         List<TimeEntryEntity> databaseList = timeEntryRepository.findByUserGuidAndMonth(userGuid, localDate);
         for (TimeEntryEntity databaseEntry : databaseList) {
             for (TimeEntryEntity incomingEntity : incomingList) {
-                if (databaseEntry.getEntryDate().equals(incomingEntity.getEntryDate())) {
+                if (databaseEntry.getEntryDate().equals(incomingEntity.getEntryDate()) &&
+                        databaseEntry.getProjectGuid().equals(incomingEntity.getProjectGuid())) {
                     StatusEntity statusEntity = statusRepository.findByName(incomingEntity.getStatusEntity().getName()).get();
                     databaseEntry.setStatusEntity(statusEntity);
                     databaseEntry.setComment(incomingEntity.getComment());
@@ -344,7 +345,7 @@ public class TimeEntryService {
             List<TimeEntryEntity> incomingEntityList) {
         incomingEntityList
                 .stream()
-                .filter(incomingEntity -> databaseEntry.getEntryDate().equals(incomingEntity.getEntryDate()))
+                .filter(incomingEntity -> databaseEntry.getEntryDate().equals(incomingEntity.getEntryDate()) && databaseEntry.getProjectGuid().equals(incomingEntity.getProjectGuid()))
                 .forEach(incomingEntity -> updateTimeEntry(databaseEntry, incomingEntity));
     }
 
@@ -365,4 +366,26 @@ public class TimeEntryService {
                 .map(incomingEntity -> databaseEntry)
                 .forEach(timeEntryRepository::delete);
     }
+
+    public boolean checkIfProjectHasAnyEntries(String projectGuid) {
+        return timeEntryRepository.existsByProjectGuid(projectGuid);
+    }
+
+    public void updateMonthStatusValidation(List<TimeEntryBo> timeEntryBoList) {
+        for (TimeEntryBo timeEntryBo : timeEntryBoList) {
+            if (!timeEntryBo.getStatus().equalsIgnoreCase(APPROVED.name()) &&
+                    !timeEntryBo.getStatus().equalsIgnoreCase(REJECTED.name()) &&
+                    !timeEntryBo.getStatus().equalsIgnoreCase(SUBMITTED.name())) {
+                String message = ": Manager can change time entry status to: '" +
+                        APPROVED.name() +
+                        "' or '" +
+                        REJECTED.name() +
+                        "'";
+                log.error(message);
+                throw new WrongStatusException(message);
+            }
+        }
+    }
+
+
 }

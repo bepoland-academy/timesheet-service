@@ -88,6 +88,7 @@ public class MonthTimeEntryController {
             timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
             timeEntryService.verifyThatWeekDatesAreUnique(timeEntryBoList);
             timeEntryService.verifyStatusesBeforeAddingComment(timeEntryBoList);
+            timeEntryService.updateMonthStatusValidation(timeEntryBoList);
         });
         monthTimeEntryBodyList.getMonthTimeEntryBodyList().forEach(monthTimeEntryBody -> {
             List<TimeEntryBo> timeEntryBoList = prepareDataForService(monthTimeEntryBody);

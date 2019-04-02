@@ -1,6 +1,7 @@
 package pl.betse.beontime.timesheet.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,9 @@ public class MonthConsultantTimeEntryController {
     private final TimeEntryService timeEntryService;
     private final DateChecker dateChecker;
 
+    @Value("${api-prefix}")
+    private String API_PREFIX;
+
     public MonthConsultantTimeEntryController(TimeEntryMapper timeEntryMapper,
                                               TimeEntryService timeEntryService,
                                               DateChecker dateChecker) {
@@ -49,10 +53,13 @@ public class MonthConsultantTimeEntryController {
         List<MonthTimeEntryBody> monthTimeEntryBodyList = timeEntryBoList.stream()
                 .map(timeEntryMapper::fromTimeEntryBoToMonthTimeEntryBody)
                 .collect(Collectors.toList());
-        URI location = linkTo(methodOn(MonthConsultantTimeEntryController.class).getMonthForConsultant(userGuid,
-                month)).toUri();
-        Link link = new Link(location.toString(), "self");
+        Link link = constructLink(userGuid,month);
         return ResponseEntity.ok(new Resources<>(monthTimeEntryBodyList, link));
+    }
+
+    private Link constructLink( String userGuid, String monthNumber) {
+        URI location = linkTo(methodOn(MonthConsultantTimeEntryController.class).getMonthForConsultant(userGuid,monthNumber)).toUri();
+        return new Link(API_PREFIX + location.getPath()).withSelfRel();
     }
 
 }
