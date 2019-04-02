@@ -1,6 +1,7 @@
 package pl.betse.beontime.timesheet.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,9 @@ public class WeekTimeEntryController {
     private final TimeEntryMapper timeEntryMapper;
     private final DateChecker dateChecker;
 
+    @Value("${api-prefix}")
+    private String API_PREFIX;
+
     public WeekTimeEntryController(TimeEntryService timeEntryService, TimeEntryMapper timeEntryMapper, DateChecker dateChecker) {
         this.timeEntryService = timeEntryService;
         this.timeEntryMapper = timeEntryMapper;
@@ -52,8 +56,7 @@ public class WeekTimeEntryController {
         List<WeekTimeEntryBody> weekTimeEntryBodyList = timeEntryBoList.stream()
                 .map(timeEntryMapper::fromTimeEntryBoToWeekTimeEntryBody)
                 .collect(Collectors.toList());
-        URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
-        Link link = new Link(location.toString(), "self");
+        Link link = constructLink(userGuid,weekNumber);
         return ResponseEntity.ok(new Resources<>(weekTimeEntryBodyList, link));
     }
 
@@ -172,6 +175,10 @@ public class WeekTimeEntryController {
         return weekTimeEntryBody.getWeekDays().stream()
                 .map(entry -> timeEntryMapper.fromWeekDayBodyToBo(entry, weekTimeEntryBody, userGuid, weekNumber))
                 .collect(Collectors.toList());
+    }
+    private Link constructLink(String userGuid, String weekNumber) {
+        URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
+        return new Link(API_PREFIX + location.getPath()).withSelfRel();
     }
 
 }

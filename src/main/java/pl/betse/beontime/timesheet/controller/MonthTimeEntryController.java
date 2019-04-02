@@ -37,7 +37,7 @@ public class MonthTimeEntryController {
     @Value("${api-prefix}")
     private String API_PREFIX;
 
-    public MonthTimeEntryController(TimeEntryMapper timeEntryMapper, TimeEntryService timeEntryService) {
+    public MonthTimeEntryController(TimeEntryMapper timeEntryMapper, TimeEntryService timeEntryService, DateChecker dateChecker) {
         this.timeEntryMapper = timeEntryMapper;
         this.timeEntryService = timeEntryService;
         this.dateChecker = dateChecker;
@@ -60,10 +60,7 @@ public class MonthTimeEntryController {
         List<MonthTimeEntryBody> monthTimeEntryBodyList = timeEntryBoList.stream()
                 .map(timeEntryMapper::fromTimeEntryBoToMonthTimeEntryBody)
                 .collect(Collectors.toList());
-        URI location = linkTo(methodOn(MonthTimeEntryController.class).getMonthForUser(managerGuid,
-                userGuid,
-                month)).toUri();
-        Link link = new Link(location.toString(), "self");
+        Link link = constructLink(managerGuid, userGuid, month);
         return ResponseEntity.ok(new Resources<>(monthTimeEntryBodyList, link));
     }
 
@@ -105,18 +102,6 @@ public class MonthTimeEntryController {
                 .collect(Collectors.toList());
     }
 
-    private void checkMonthNumberFormat(String month) {
-        if (!month.matches("[1-3]\\d{3}-[0-1]\\d-01")) {
-            log.error("Incorrect month format or number");
-            throw new IncorrectMonthFormatException();
-        }
-    }
-
-    private LocalDate prepareRequestDateForService(String month) {
-        month += "-01";
-        checkMonthNumberFormat(month);
-        return LocalDate.parse(month);
-    }
 
     private Link constructLink(String managerGuid, String userGuid, String monthNumber) {
         URI location = linkTo(methodOn(MonthTimeEntryController.class).getMonthForUser(managerGuid, userGuid, monthNumber)).toUri();
