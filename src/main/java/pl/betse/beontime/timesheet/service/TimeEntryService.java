@@ -60,7 +60,7 @@ public class TimeEntryService {
         return allProjectsForWeekList;
     }
 
-    public boolean checkIfProjectHasAnyEntries(String projectGuid){
+    public boolean checkIfProjectHasAnyEntries(String projectGuid) {
         return timeEntryRepository.existsByProjectGuid(projectGuid);
     }
 
@@ -91,6 +91,7 @@ public class TimeEntryService {
             timeEntryRepository.save(entry);
         }
     }
+
 
     public void editWeekHoursAndStatuses(List<TimeEntryBo> timeEntryBoList, String userGuid, String weekNumber) {
         List<TimeEntryEntity> incomingList = validateWeekTimeEntry(timeEntryBoList);
@@ -233,14 +234,6 @@ public class TimeEntryService {
                 .collect(Collectors.toList());
         List<StatusEntity> statusEntities = statusRepository.findAll();
         for (TimeEntryEntity entry : timeEntryEntityList) {
-            if (timeEntryRepository.existsByProjectGuid(entry.getProjectGuid())) {
-                log.error("Project with guid" + entry.getProjectGuid() + " not found.");
-                throw new ProjectNotFoundException();
-            }
-            if (!timeEntryRepository.existsByUserGuid(entry.getUserGuid())) {
-                log.error("User with guid" + entry.getUserGuid() + "  not found.");
-                throw new UserNotFoundException();
-            }
             verifyStatusNames(entry.getStatusEntity(), statusEntities);
         }
         return timeEntryEntityList;
