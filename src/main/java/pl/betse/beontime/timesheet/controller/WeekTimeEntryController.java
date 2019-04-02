@@ -8,16 +8,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import pl.betse.beontime.timesheet.bo.TimeEntryBo;
-import pl.betse.beontime.timesheet.exception.IncorrectWeekFormatException;
 import pl.betse.beontime.timesheet.mapper.TimeEntryMapper;
 import pl.betse.beontime.timesheet.model.WeekTimeEntryBody;
 import pl.betse.beontime.timesheet.model.WeekTimeEntryBodyList;
 import pl.betse.beontime.timesheet.service.TimeEntryService;
+import pl.betse.beontime.timesheet.utils.DateChecker;
 import pl.betse.beontime.timesheet.validation.CreateTimeEntry;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,48 +29,78 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 public class WeekTimeEntryController {
     private final TimeEntryService timeEntryService;
     private final TimeEntryMapper timeEntryMapper;
+    private final DateChecker dateChecker;
 
     @Value("${api-prefix}")
     private String API_PREFIX;
 
-    public WeekTimeEntryController(TimeEntryService timeEntryService, TimeEntryMapper timeEntryMapper) {
+    public WeekTimeEntryController(TimeEntryService timeEntryService, TimeEntryMapper timeEntryMapper, DateChecker dateChecker) {
         this.timeEntryService = timeEntryService;
         this.timeEntryMapper = timeEntryMapper;
+        this.dateChecker = dateChecker;
     }
 
+    /**
+     * This method return week time sheet of chosen user
+     *
+     * @param userGuid   user identifier
+     * @param weekNumber number of week
+     * @return user time sheet
+     */
     @GetMapping("/{userGuid}/weeks/{weekNumber}")
     public ResponseEntity<Resources<WeekTimeEntryBody>> getWeekForUser(
             @PathVariable("userGuid") String userGuid,
             @PathVariable("weekNumber") String weekNumber) {
-        checkWeekNumberFormat(weekNumber);
+        dateChecker.checkWeekNumberFormat(weekNumber);
         List<List<TimeEntryBo>> timeEntryBoList = timeEntryService.findByUserGuidAndWeek(userGuid, weekNumber);
         List<WeekTimeEntryBody> weekTimeEntryBodyList = timeEntryBoList.stream()
                 .map(timeEntryMapper::fromTimeEntryBoToWeekTimeEntryBody)
                 .collect(Collectors.toList());
-        Link link = constructLink(userGuid, weekNumber);
+        Link link = constructLink(userGuid,weekNumber);
         return ResponseEntity.ok(new Resources<>(weekTimeEntryBodyList, link));
     }
 
+    /**
+     * This method create for user new week time sheet
+     *
+     * @param weekTimeEntryBodyList representation list of time objects
+     * @param userGuid              user identifier
+     * @param weekNumber            number of week
+     * @param httpServletRequest    http request
+     * @return this method return new time sheet for week
+     */
     @PostMapping("/{userGuid}/weeks/{weekNumber}")
     public ResponseEntity createWeekForUser(
             @RequestBody @Validated(CreateTimeEntry.class) WeekTimeEntryBodyList weekTimeEntryBodyList,
             @PathVariable("userGuid") String userGuid,
             @PathVariable("weekNumber") String weekNumber,
-            HttpServletRequest httpServletRequest) throws URISyntaxException {
+            HttpServletRequest httpServletRequest) {
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
-            List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(
-                    userGuid,
-                    weekNumber, httpServletRequest, weekTimeEntryBody);
+            List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(userGuid,
+                    weekNumber,
+                    httpServletRequest,
+                    weekTimeEntryBody);
             timeEntryService.verifyStatusesBeforeCreatingNewEntry(timeEntryBoList);
         });
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
-            List<TimeEntryBo> timeEntryBoList = mapWeekTimeEntryBodyToBoList(weekTimeEntryBody, userGuid, weekNumber);
+            List<TimeEntryBo> timeEntryBoList = mapWeekTimeEntryBodyToBoList(weekTimeEntryBody,
+                    userGuid,
+                    weekNumber);
             timeEntryService.saveWeekForUser(timeEntryBoList);
         });
         URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
-        return ResponseEntity.created(new URI(API_PREFIX + location.getPath())).build();
+        return ResponseEntity.created(location).build();
     }
 
+    /**
+     * this method update week time sheet for user
+     *
+     * @param weekTimeEntryBodyList representation list of time objects
+     * @param userGuid              user identifier
+     * @param weekNumber            number of week
+     * @param httpServletRequest    http request
+     * @return this method return updated time sheet for week
+     */
     @PutMapping("/{userGuid}/weeks/{weekNumber}")
     public ResponseEntity editWeekForUser(
             @RequestBody @Validated(CreateTimeEntry.class) WeekTimeEntryBodyList weekTimeEntryBodyList,
@@ -92,6 +121,15 @@ public class WeekTimeEntryController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * this method delete week time entry for user
+     *
+     * @param weekTimeEntryBodyList representation list of time objects
+     * @param userGuid              user identifier
+     * @param weekNumber            number of week
+     * @param httpServletRequest    http request
+     * @return deleted time entry
+     */
     @DeleteMapping("/{userGuid}/weeks/{weekNumber}")
     public ResponseEntity deleteWeekForUser(@RequestBody @Validated(CreateTimeEntry.class) WeekTimeEntryBodyList weekTimeEntryBodyList,
                                             @PathVariable("userGuid") String userGuid,
@@ -106,15 +144,22 @@ public class WeekTimeEntryController {
         });
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
             List<TimeEntryBo> timeEntryBoList = mapWeekTimeEntryBodyToBoList(weekTimeEntryBody, userGuid, weekNumber);
-            timeEntryService.deleteWeekTimeEntry(timeEntryBoList, userGuid, weekNumber);
+            timeEntryService.deleteWeekTimeEntries(timeEntryBoList, userGuid, weekNumber);
         });
         return ResponseEntity.ok().build();
     }
 
-    private List<TimeEntryBo> getTimeEntryBosWithBasicVerification(
-            String userGuid,
-            String weekNumber,
-            HttpServletRequest httpServletRequest, WeekTimeEntryBody weekTimeEntryBody) {
+    /**
+     * @param userGuid
+     * @param weekNumber
+     * @param httpServletRequest
+     * @param weekTimeEntryBody
+     * @return
+     */
+    private List<TimeEntryBo> getTimeEntryBosWithBasicVerification(String userGuid,
+                                                                   String weekNumber,
+                                                                   HttpServletRequest httpServletRequest,
+                                                                   WeekTimeEntryBody weekTimeEntryBody) {
         List<TimeEntryBo> timeEntryBoList = mapWeekTimeEntryBodyToBoList(weekTimeEntryBody, userGuid, weekNumber);
         timeEntryService.checkIfDateIsInCorrectWeekOfYear(timeEntryBoList, weekNumber);
         timeEntryService.checkIfTimeEntriesExist(timeEntryBoList, httpServletRequest.getMethod());
@@ -123,23 +168,17 @@ public class WeekTimeEntryController {
     }
 
 
-    private List<TimeEntryBo> mapWeekTimeEntryBodyToBoList(WeekTimeEntryBody weekTimeEntryBody, String userGuid, String weekNumber) {
-        checkWeekNumberFormat(weekNumber);
+    private List<TimeEntryBo> mapWeekTimeEntryBodyToBoList(WeekTimeEntryBody weekTimeEntryBody,
+                                                           String userGuid,
+                                                           String weekNumber) {
+        dateChecker.checkWeekNumberFormat(weekNumber);
         return weekTimeEntryBody.getWeekDays().stream()
                 .map(entry -> timeEntryMapper.fromWeekDayBodyToBo(entry, weekTimeEntryBody, userGuid, weekNumber))
                 .collect(Collectors.toList());
     }
-
-
-    private void checkWeekNumberFormat(String week) {
-        if (!week.matches("[1-3]\\d{3}-W[0-5]\\d")) {
-            log.error("Incorrect week format or number");
-            throw new IncorrectWeekFormatException();
-        }
-    }
-
     private Link constructLink(String userGuid, String weekNumber) {
         URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
         return new Link(API_PREFIX + location.getPath()).withSelfRel();
     }
+
 }
