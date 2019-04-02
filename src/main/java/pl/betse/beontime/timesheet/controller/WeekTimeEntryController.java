@@ -17,6 +17,7 @@ import pl.betse.beontime.timesheet.validation.CreateTimeEntry;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,7 +75,7 @@ public class WeekTimeEntryController {
             @RequestBody @Validated(CreateTimeEntry.class) WeekTimeEntryBodyList weekTimeEntryBodyList,
             @PathVariable("userGuid") String userGuid,
             @PathVariable("weekNumber") String weekNumber,
-            HttpServletRequest httpServletRequest) {
+            HttpServletRequest httpServletRequest) throws URISyntaxException {
         weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
             List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(userGuid,
                     weekNumber,
@@ -88,8 +89,8 @@ public class WeekTimeEntryController {
                     weekNumber);
             timeEntryService.saveWeekForUser(timeEntryBoList);
         });
-        URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid, weekNumber)).toUri();
-        return ResponseEntity.created(location).build();
+        URI location = linkTo(methodOn(WeekTimeEntryController.class).getWeekForUser(userGuid,weekNumber)).toUri();
+        return ResponseEntity.created(new URI(API_PREFIX + location.getPath())).build();
     }
 
     /**

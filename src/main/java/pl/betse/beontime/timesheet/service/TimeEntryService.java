@@ -67,7 +67,6 @@ public class TimeEntryService {
             );
         }
         if (allProjectsForWeekList.isEmpty()) {
-            //log.error("Time entry for user with guid = " + userGuid + " and week = " + week + " not exists.");
             log.error("Time entry for user with guid = {} and week = {} not exists.", userGuid, week);
             throw new TimeEntryForUserWeekNotFound();
         }
