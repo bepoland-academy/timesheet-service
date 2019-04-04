@@ -126,37 +126,20 @@ public class WeekTimeEntryController {
     /**
      * this method delete week time entry for user
      *
-     * @param weekTimeEntryBodyList representation list of time objects
-     * @param userGuid              user identifier
-     * @param weekNumber            number of week
-     * @param httpServletRequest    http request
+     * @param userGuid    user identifier
+     * @param weekNumber  number of week
+     * @param projectGuid project identifier
      * @return deleted time entry
      */
     @DeleteMapping("/{userGuid}/weeks/{weekNumber}")
-    public ResponseEntity deleteWeekForUser(@RequestBody @Validated(CreateTimeEntry.class) WeekTimeEntryBodyList weekTimeEntryBodyList,
-                                            @PathVariable("userGuid") String userGuid,
+    public ResponseEntity deleteWeekForUser(@PathVariable("userGuid") String userGuid,
                                             @PathVariable("weekNumber") String weekNumber,
-                                            @RequestParam(name = "projectGuid", required = false) String projectGuid,
-                                            HttpServletRequest httpServletRequest) {
-        weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
-            List<TimeEntryBo> timeEntryBoList = getTimeEntryBosWithBasicVerification(userGuid,
-                    weekNumber,
-                    httpServletRequest,
-                    weekTimeEntryBody);
-            if (projectGuid.isEmpty()) {
-                timeEntryService.verifyStatusesBeforeDeleting(timeEntryBoList);
-            } else {
-                timeEntryService.verifyStatusesBeforeDeleting(timeEntryBoList.stream().filter(guid -> guid.getProjectGuid().equals(projectGuid)).collect(Collectors.toList()));
-            }
-        });
-        weekTimeEntryBodyList.getWeekTimeEntryBodyList().forEach(weekTimeEntryBody -> {
-            List<TimeEntryBo> timeEntryBoList = mapWeekTimeEntryBodyToBoList(weekTimeEntryBody, userGuid, weekNumber);
-            if (projectGuid.isEmpty()) {
-                timeEntryService.deleteWeekTimeEntries(timeEntryBoList, userGuid, weekNumber);
-            } else {
-                timeEntryService.deleteWeekTimeEntriesFromProject(timeEntryBoList, userGuid, weekNumber, projectGuid);
-            }
-        });
+                                            @RequestParam(name = "projectGuid", required = false, defaultValue = "") String projectGuid) {
+        if (!projectGuid.isEmpty()) {
+            timeEntryService.deleteWeekTimeEntriesFromProject(userGuid, weekNumber, projectGuid);
+        } else {
+            timeEntryService.deleteWeekTimeEntries(userGuid, weekNumber);
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -194,7 +177,7 @@ public class WeekTimeEntryController {
     }
 
     private Link constructDeleteLink(String userGuid, String weekNumber, String projectGuid) {
-        URI location = linkTo(methodOn(WeekTimeEntryController.class).deleteWeekForUser(null, userGuid, weekNumber, projectGuid, null)).toUri();
+        URI location = linkTo(methodOn(WeekTimeEntryController.class).deleteWeekForUser(userGuid, weekNumber, projectGuid)).toUri();
         return new Link(API_PREFIX + location.getPath() + "?projectGuid=" + projectGuid).withRel("DELETE");
     }
 

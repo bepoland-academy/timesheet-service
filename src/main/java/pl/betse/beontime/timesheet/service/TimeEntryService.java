@@ -135,22 +135,17 @@ public class TimeEntryService {
     /**
      * Delete week time sheet for chosen user.
      *
-     * @param timeEntryBoList representation of time entry object list
-     * @param userGuid        user identifier
-     * @param weekNumber      number of week
+     * @param userGuid   user identifier
+     * @param weekNumber number of week
      */
-    public void deleteWeekTimeEntries(List<TimeEntryBo> timeEntryBoList, String userGuid, String weekNumber) {
-        List<TimeEntryEntity> incomingList =
-                validateWeekTimeEntry(timeEntryBoList);
-        List<TimeEntryEntity> databaseList =
-                timeEntryRepository.findByUserGuidAndWeekOrderByEntryDate(userGuid, weekNumber);
-        databaseList.forEach(databaseEntry -> deleteIncomingList(databaseEntry, incomingList));
+    public void deleteWeekTimeEntries(String userGuid, String weekNumber) {
+        List<TimeEntryEntity> timeEntryEntityList = timeEntryRepository.findByUserGuidAndWeekOrderByEntryDate(userGuid, weekNumber);
+        timeEntryEntityList.forEach(timeEntryRepository::delete);
     }
 
-    public void deleteWeekTimeEntriesFromProject(List<TimeEntryBo> timeEntryBoList, String userGuid, String weekNumber, String projectGuid) {
-        List<TimeEntryEntity> incomingList = validateWeekTimeEntry(timeEntryBoList);
-        List<TimeEntryEntity> dataBaseList = timeEntryRepository.findByUserGuidAndProjectGuidAndWeekOrderByEntryDate(userGuid, projectGuid,weekNumber);
-        dataBaseList.forEach(databaseEntry -> deleteIncomingList(databaseEntry, incomingList));
+    public void deleteWeekTimeEntriesFromProject(String userGuid, String weekNumber, String projectGuid) {
+        List<TimeEntryEntity> timeEntryEntityList = timeEntryRepository.findByUserGuidAndProjectGuidAndWeekOrderByEntryDate(userGuid, projectGuid, weekNumber);
+        timeEntryEntityList.forEach(timeEntryRepository::delete);
     }
 
     /**
