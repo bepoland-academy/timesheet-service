@@ -42,5 +42,10 @@ pipeline {
         sh 'docker-compose -H main-server:2376 -f production/docker-compose.yml up -d timesheet-service'
       }
     }
+    stage('Restart Registry') {
+      steps {
+        sh 'docker-compose -H main-server:2376 -f production/docker-compose.yml restart registry-service'
+      }
+    }
   }
 }
