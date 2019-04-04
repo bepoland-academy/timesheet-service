@@ -147,6 +147,12 @@ public class TimeEntryService {
         databaseList.forEach(databaseEntry -> deleteIncomingList(databaseEntry, incomingList));
     }
 
+    public void deleteWeekTimeEntriesFromProject(List<TimeEntryBo> timeEntryBoList, String userGuid, String weekNumber, String projectGuid) {
+        List<TimeEntryEntity> incomingList = validateWeekTimeEntry(timeEntryBoList);
+        List<TimeEntryEntity> dataBaseList = timeEntryRepository.findByUserGuidAndProjectGuidAndWeekOrderByEntryDate(userGuid, projectGuid,weekNumber);
+        dataBaseList.forEach(databaseEntry -> deleteIncomingList(databaseEntry, incomingList));
+    }
+
     /**
      * Update monthly time sheet for chosen user.
      *
@@ -385,6 +391,5 @@ public class TimeEntryService {
             }
         }
     }
-
 
 }
