@@ -111,7 +111,7 @@ public class TimeEntryService {
     public List<MonthBo> getMonthForUserByStatus(String userGuid, String statusName) {
         StatusEntity status = statusRepository.findByName(statusName)
                 .orElseThrow(StatusNotFoundException::new);
-       return timeEntryRepository.findMonthsByStatusAndUserGuid(userGuid, status).stream()
+        return timeEntryRepository.findMonthsByStatusAndUserGuid(userGuid, status).stream()
                 .map(monthMapper::fromEntityToBo)
                 .collect(Collectors.toList());
 

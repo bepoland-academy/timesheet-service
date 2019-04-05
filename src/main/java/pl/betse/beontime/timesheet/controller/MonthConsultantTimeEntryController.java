@@ -54,24 +54,25 @@ public class MonthConsultantTimeEntryController {
         List<MonthTimeEntryBody> monthTimeEntryBodyList = timeEntryBoList.stream()
                 .map(timeEntryMapper::fromTimeEntryBoToMonthTimeEntryBody)
                 .collect(Collectors.toList());
-        Link link = constructLink(userGuid,month);
+        Link link = constructLink(userGuid, month);
         return ResponseEntity.ok(new Resources<>(monthTimeEntryBodyList, link));
     }
+
     @GetMapping("{consultantGuid}/months/status/{statusName}")
-    public ResponseEntity<Resources<MonthBo>> getStatusByMonth (@PathVariable("consultantGuid") String userGuid,
-                                                     @PathVariable("statusName") String statusName){
-        List<MonthBo> monthBoList = timeEntryService.getMonthForUserByStatus(userGuid,statusName);
-        Link link = construckLinkForStatus(userGuid,statusName);
+    public ResponseEntity<Resources<MonthBo>> getStatusByMonth(@PathVariable("consultantGuid") String userGuid,
+                                                               @PathVariable("statusName") String statusName) {
+        List<MonthBo> monthBoList = timeEntryService.getMonthForUserByStatus(userGuid, statusName);
+        Link link = construckLinkForStatus(userGuid, statusName);
         return ResponseEntity.ok(new Resources<>(monthBoList, link));
     }
 
-    private Link constructLink( String userGuid, String monthNumber) {
-        URI location = linkTo(methodOn(MonthConsultantTimeEntryController.class).getMonthForConsultant(userGuid,monthNumber)).toUri();
+    private Link constructLink(String userGuid, String monthNumber) {
+        URI location = linkTo(methodOn(MonthConsultantTimeEntryController.class).getMonthForConsultant(userGuid, monthNumber)).toUri();
         return new Link(API_PREFIX + location.getPath()).withSelfRel();
     }
 
-    private Link construckLinkForStatus(String userGuid, String statusName){
-        URI location = linkTo(methodOn(MonthConsultantTimeEntryController.class).getStatusByMonth(userGuid,statusName)).toUri();
+    private Link construckLinkForStatus(String userGuid, String statusName) {
+        URI location = linkTo(methodOn(MonthConsultantTimeEntryController.class).getStatusByMonth(userGuid, statusName)).toUri();
         return new Link(API_PREFIX + location.getPath()).withSelfRel();
     }
 

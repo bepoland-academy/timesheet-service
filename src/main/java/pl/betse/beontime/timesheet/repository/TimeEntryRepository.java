@@ -33,5 +33,5 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntryEntity, Long
     @Query("SELECT new pl.betse.beontime.timesheet.entity.MonthEntity(DATE_FORMAT(entry.entryDate, '%Y-%m')) FROM TimeEntryEntity entry " +
             "WHERE entry.userGuid=:userGuid AND entry.statusEntity=:status " +
             "GROUP BY DATE_FORMAT(entry.entryDate, '%Y-%m')")
-    List<MonthEntity> findMonthsByStatusAndUserGuid(@Param("userGuid")String userGuid, @Param("status")StatusEntity status);
+    List<MonthEntity> findMonthsByStatusAndUserGuid(@Param("userGuid") String userGuid, @Param("status") StatusEntity status);
 }
