@@ -3,11 +3,13 @@ package pl.betse.beontime.timesheet.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMethod;
+import pl.betse.beontime.timesheet.bo.MonthBo;
 import pl.betse.beontime.timesheet.bo.StatusBo;
 import pl.betse.beontime.timesheet.bo.TimeEntryBo;
 import pl.betse.beontime.timesheet.entity.StatusEntity;
 import pl.betse.beontime.timesheet.entity.TimeEntryEntity;
 import pl.betse.beontime.timesheet.exception.*;
+import pl.betse.beontime.timesheet.mapper.MonthMapper;
 import pl.betse.beontime.timesheet.mapper.StatusMapper;
 import pl.betse.beontime.timesheet.mapper.TimeEntryMapper;
 import pl.betse.beontime.timesheet.repository.StatusRepository;
@@ -30,16 +32,20 @@ public class TimeEntryService {
     private final TimeEntryMapper timeEntryMapper;
     private final StatusRepository statusRepository;
     private final StatusMapper statusMapper;
+    private final MonthMapper monthMapper;
+
 
     public TimeEntryService(
             TimeEntryRepository timeEntryRepository,
             TimeEntryMapper timeEntryMapper,
             StatusRepository statusRepository,
-            StatusMapper statusMapper) {
+            StatusMapper statusMapper,
+            MonthMapper monthMapper) {
         this.timeEntryRepository = timeEntryRepository;
         this.timeEntryMapper = timeEntryMapper;
         this.statusRepository = statusRepository;
         this.statusMapper = statusMapper;
+        this.monthMapper = monthMapper;
     }
 
     /**
@@ -100,6 +106,15 @@ public class TimeEntryService {
             throw new TimeEntryForUserMonthNotFound();
         }
         return allProjectForMonth;
+    }
+
+    public List<MonthBo> getMonthForUserByStatus(String userGuid, String statusName) {
+        StatusEntity status = statusRepository.findByName(statusName)
+                .orElseThrow(StatusNotFoundException::new);
+        return timeEntryRepository.findMonthsByStatusAndUserGuid(userGuid, status).stream()
+                .map(monthMapper::fromEntityToBo)
+                .collect(Collectors.toList());
+
     }
 
     /**
