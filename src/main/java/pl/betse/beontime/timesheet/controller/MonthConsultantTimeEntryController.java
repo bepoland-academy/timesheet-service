@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.betse.beontime.timesheet.bo.MonthBo;
 import pl.betse.beontime.timesheet.bo.TimeEntryBo;
+import pl.betse.beontime.timesheet.mapper.MonthMapper;
 import pl.betse.beontime.timesheet.mapper.TimeEntryMapper;
+import pl.betse.beontime.timesheet.model.MonthBody;
 import pl.betse.beontime.timesheet.model.MonthTimeEntryBody;
 import pl.betse.beontime.timesheet.service.TimeEntryService;
 import pl.betse.beontime.timesheet.utils.DateChecker;
@@ -34,16 +36,16 @@ public class MonthConsultantTimeEntryController {
     private final TimeEntryMapper timeEntryMapper;
     private final TimeEntryService timeEntryService;
     private final DateChecker dateChecker;
+    private final MonthMapper monthMapper;
 
     @Value("${api-prefix}")
     private String API_PREFIX;
 
-    public MonthConsultantTimeEntryController(TimeEntryMapper timeEntryMapper,
-                                              TimeEntryService timeEntryService,
-                                              DateChecker dateChecker) {
+    public MonthConsultantTimeEntryController(TimeEntryMapper timeEntryMapper, TimeEntryService timeEntryService, DateChecker dateChecker, MonthMapper monthMapper) {
         this.timeEntryMapper = timeEntryMapper;
         this.timeEntryService = timeEntryService;
         this.dateChecker = dateChecker;
+        this.monthMapper = monthMapper;
     }
 
     @GetMapping("{consultantGuid}/months/{monthNumber}")
@@ -58,12 +60,15 @@ public class MonthConsultantTimeEntryController {
         return ResponseEntity.ok(new Resources<>(monthTimeEntryBodyList, link));
     }
 
-    @GetMapping("{consultantGuid}/months/status/{statusName}")
-    public ResponseEntity<Resources<MonthBo>> getStatusByMonth(@PathVariable("consultantGuid") String userGuid,
-                                                               @PathVariable("statusName") String statusName) {
+    @GetMapping("{consultantGuid}/manager/{managerGuid}/months/status/{statusName}")
+    public ResponseEntity<List<MonthBody>> getStatusByMonth(@PathVariable("consultantGuid") String userGuid,
+                                                          @PathVariable("managerGuid") String managerGuid,
+                                                          @PathVariable("statusName") String statusName) {
         List<MonthBo> monthBoList = timeEntryService.getMonthForUserByStatus(userGuid, statusName);
-        Link link = construckLinkForStatus(userGuid, statusName);
-        return ResponseEntity.ok(new Resources<>(monthBoList, link));
+        List<MonthBody> monthBodyList = monthBoList.stream()
+                .map(monthMapper::fromBoToBody)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(monthBodyList);
     }
 
     private Link constructLink(String userGuid, String monthNumber) {
@@ -71,9 +76,9 @@ public class MonthConsultantTimeEntryController {
         return new Link(API_PREFIX + location.getPath()).withSelfRel();
     }
 
-    private Link construckLinkForStatus(String userGuid, String statusName) {
-        URI location = linkTo(methodOn(MonthConsultantTimeEntryController.class).getStatusByMonth(userGuid, statusName)).toUri();
-        return new Link(API_PREFIX + location.getPath()).withSelfRel();
-    }
+//    private Link construckLinkForStatus(String userGuid, String statusName) {
+//        URI location = linkTo(methodOn(MonthConsultantTimeEntryController.class).getStatusByMonth(userGuid, statusName)).toUri();
+//        return new Link(API_PREFIX + location.getPath()).withSelfRel();
+//    }
 
 }

@@ -103,7 +103,7 @@ public class WeekTimeEntryController {
      * @param httpServletRequest    http request
      * @return this method return updated time sheet for week
      */
-    @PutMapping("/{userGuid}/weeks/{weekNumber}")
+    @PutMapping("{userGuid}/weeks/{weekNumber}")
     public ResponseEntity editWeekForUser(
             @RequestBody @Validated(CreateTimeEntry.class) WeekTimeEntryBodyList weekTimeEntryBodyList,
             @PathVariable("userGuid") String userGuid,

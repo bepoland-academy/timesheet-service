@@ -112,6 +112,7 @@ public class TimeEntryService {
         StatusEntity status = statusRepository.findByName(statusName)
                 .orElseThrow(StatusNotFoundException::new);
         return timeEntryRepository.findMonthsByStatusAndUserGuid(userGuid, status).stream()
+//                .sorted(Comparator.comparing(StatusEntity::getName.compare(statusName,"APPROVED"))
                 .map(monthMapper::fromEntityToBo)
                 .collect(Collectors.toList());
 
@@ -180,6 +181,9 @@ public class TimeEntryService {
                     StatusEntity statusEntity = statusRepository.findByName(incomingEntity.getStatusEntity().getName()).get();
                     databaseEntry.setStatusEntity(statusEntity);
                     databaseEntry.setComment(incomingEntity.getComment());
+                    if (!databaseEntry.getStatusEntity().getName().equalsIgnoreCase(REJECTED.name())) {
+                        databaseEntry.setComment("");
+                    }
                     timeEntryRepository.save(databaseEntry);
                 }
             }
