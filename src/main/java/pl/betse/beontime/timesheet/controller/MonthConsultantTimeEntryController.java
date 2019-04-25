@@ -6,16 +6,14 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.betse.beontime.timesheet.bo.MonthBo;
 import pl.betse.beontime.timesheet.bo.TimeEntryBo;
 import pl.betse.beontime.timesheet.mapper.MonthMapper;
 import pl.betse.beontime.timesheet.mapper.TimeEntryMapper;
 import pl.betse.beontime.timesheet.model.MonthBody;
 import pl.betse.beontime.timesheet.model.MonthTimeEntryBody;
+import pl.betse.beontime.timesheet.model.StatsBody;
 import pl.betse.beontime.timesheet.service.TimeEntryService;
 import pl.betse.beontime.timesheet.utils.DateChecker;
 import pl.betse.beontime.timesheet.validation.CreateTimeEntry;
@@ -69,6 +67,16 @@ public class MonthConsultantTimeEntryController {
                 .map(monthMapper::fromBoToBody)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(monthBodyList);
+    }
+
+    @GetMapping("{consultantGuid}/statistics")
+    public ResponseEntity<StatsBody> getStatistics(
+            @PathVariable("consultantGuid") String consultantGuid,
+            @RequestParam("statusName") String statusName) {
+        Integer hours = timeEntryService.getStatistics(consultantGuid, statusName);
+        StatsBody statsBody = StatsBody.builder().hours(hours).build();
+
+        return ResponseEntity.ok(statsBody);
     }
 
     private Link constructLink(String userGuid, String monthNumber) {

@@ -406,4 +406,16 @@ public class TimeEntryService {
         }
     }
 
+    /**
+     * Returns sum of hours for given user and status.
+     * @param userGuid
+     * @param statusName
+     * @return
+     */
+    public Integer getStatistics(
+            String userGuid,
+            String statusName) {
+        StatusEntity statusEntity = statusRepository.findByName(statusName).get();
+        return timeEntryRepository.getHoursByUserAndStatus(userGuid, statusEntity);
+    }
 }
