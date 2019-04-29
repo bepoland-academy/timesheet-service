@@ -34,4 +34,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntryEntity, Long
             "WHERE entry.userGuid=:userGuid AND entry.statusEntity=:status " +
             "GROUP BY DATE_FORMAT(entry.entryDate, '%Y-%m')")
     List<MonthEntity> findMonthsByStatusAndUserGuid(@Param("userGuid") String userGuid, @Param("status") StatusEntity status);
+
+    @Query("SELECT SUM (entry.hoursNumber)FROM TimeEntryEntity entry " +
+            "WHERE entry.userGuid=:userGuid AND entry.statusEntity=:status ")
+    Integer getHoursByUserAndStatus(@Param("userGuid") String userGuid, @Param("status") StatusEntity status);
 }

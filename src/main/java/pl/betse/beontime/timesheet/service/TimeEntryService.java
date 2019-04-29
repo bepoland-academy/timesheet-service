@@ -112,6 +112,7 @@ public class TimeEntryService {
         StatusEntity status = statusRepository.findByName(statusName)
                 .orElseThrow(StatusNotFoundException::new);
         return timeEntryRepository.findMonthsByStatusAndUserGuid(userGuid, status).stream()
+//                .sorted(Comparator.comparing(StatusEntity::getName.compare(statusName,"APPROVED"))
                 .map(monthMapper::fromEntityToBo)
                 .collect(Collectors.toList());
 
@@ -180,6 +181,9 @@ public class TimeEntryService {
                     StatusEntity statusEntity = statusRepository.findByName(incomingEntity.getStatusEntity().getName()).get();
                     databaseEntry.setStatusEntity(statusEntity);
                     databaseEntry.setComment(incomingEntity.getComment());
+                    if (!databaseEntry.getStatusEntity().getName().equalsIgnoreCase(REJECTED.name())) {
+                        databaseEntry.setComment("");
+                    }
                     timeEntryRepository.save(databaseEntry);
                 }
             }
@@ -294,6 +298,9 @@ public class TimeEntryService {
      */
     public void verifyStatusesBeforeAddingComment(List<TimeEntryBo> timeEntryBoList) {
         for (TimeEntryBo timeEntryBo : timeEntryBoList) {
+            if(timeEntryBo.getStatus().equalsIgnoreCase(REJECTED.name())){
+                timeEntryBo.setStatus("");
+            }
             if (!timeEntryBo.getStatus().equalsIgnoreCase(REJECTED.name()) && !timeEntryBo.getComment().isEmpty()) {
                 String message = ": Only entries with '" + REJECTED.name() + "' status can be commented.";
                 log.error(message);
@@ -350,6 +357,9 @@ public class TimeEntryService {
                 .collect(Collectors.toList());
         List<StatusEntity> statusEntities = statusRepository.findAll();
         for (TimeEntryEntity entry : timeEntryEntityList) {
+            if(entry.getStatusEntity().getName().equalsIgnoreCase(REJECTED.name())){
+                entry.setComment("");
+            }
             verifyStatusNames(entry.getStatusEntity(), statusEntities);
         }
         return timeEntryEntityList;
@@ -402,4 +412,16 @@ public class TimeEntryService {
         }
     }
 
+    /**
+     * Returns sum of hours for given user and status.
+     * @param userGuid
+     * @param statusName
+     * @return
+     */
+    public Integer getStatistics(
+            String userGuid,
+            String statusName) {
+        StatusEntity statusEntity = statusRepository.findByName(statusName).get();
+        return timeEntryRepository.getHoursByUserAndStatus(userGuid, statusEntity);
+    }
 }
