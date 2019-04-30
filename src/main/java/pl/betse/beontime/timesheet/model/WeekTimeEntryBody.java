@@ -28,6 +28,10 @@ public class WeekTimeEntryBody extends ResourceSupport {
 
     private String week;
 
+    private Integer approvedHours;
+
+    private boolean offSite;
+
     @NotEmpty(groups = {CreateTimeEntry.class}, message = "Week days can't be empty!")
     @NotNull(groups = {CreateTimeEntry.class}, message = "Week days can't be null!")
     @Size(groups = {CreateTimeEntry.class}, message = "Week list should have size between 1 nad 7!", min = 1, max = 7)

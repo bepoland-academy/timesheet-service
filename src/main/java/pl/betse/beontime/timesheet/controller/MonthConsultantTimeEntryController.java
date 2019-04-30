@@ -15,10 +15,12 @@ import pl.betse.beontime.timesheet.model.MonthBody;
 import pl.betse.beontime.timesheet.model.MonthTimeEntryBody;
 import pl.betse.beontime.timesheet.model.StatsBody;
 import pl.betse.beontime.timesheet.service.TimeEntryService;
+import pl.betse.beontime.timesheet.service.TimeEntryStatus;
 import pl.betse.beontime.timesheet.utils.DateChecker;
 import pl.betse.beontime.timesheet.validation.CreateTimeEntry;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,14 +56,18 @@ public class MonthConsultantTimeEntryController {
         List<MonthTimeEntryBody> monthTimeEntryBodyList = timeEntryBoList.stream()
                 .map(timeEntryMapper::fromTimeEntryBoToMonthTimeEntryBody)
                 .collect(Collectors.toList());
+
+        monthTimeEntryBodyList.forEach(item -> item.setApprovedHours(timeEntryService.getStatistics(item.getConsultantId(), TimeEntryStatus.APPROVED.name())));
+        monthTimeEntryBodyList.forEach(item -> item.setOffSite(true));
+
         Link link = constructLink(userGuid, month);
         return ResponseEntity.ok(new Resources<>(monthTimeEntryBodyList, link));
     }
 
     @GetMapping("{consultantGuid}/manager/{managerGuid}/months/status/{statusName}")
     public ResponseEntity<List<MonthBody>> getStatusByMonth(@PathVariable("consultantGuid") String userGuid,
-                                                          @PathVariable("managerGuid") String managerGuid,
-                                                          @PathVariable("statusName") String statusName) {
+                                                            @PathVariable("managerGuid") String managerGuid,
+                                                            @PathVariable("statusName") String statusName) {
         List<MonthBo> monthBoList = timeEntryService.getMonthForUserByStatus(userGuid, statusName);
         List<MonthBody> monthBodyList = monthBoList.stream()
                 .map(monthMapper::fromBoToBody)
