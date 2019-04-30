@@ -182,7 +182,7 @@ public class TimeEntryService {
                     databaseEntry.setStatusEntity(statusEntity);
                     databaseEntry.setComment(incomingEntity.getComment());
                     if (!databaseEntry.getStatusEntity().getName().equalsIgnoreCase(REJECTED.name())) {
-                        databaseEntry.setComment("");
+                            databaseEntry.setComment("");
                     }
                     timeEntryRepository.save(databaseEntry);
                 }
@@ -298,9 +298,6 @@ public class TimeEntryService {
      */
     public void verifyStatusesBeforeAddingComment(List<TimeEntryBo> timeEntryBoList) {
         for (TimeEntryBo timeEntryBo : timeEntryBoList) {
-            if(timeEntryBo.getStatus().equalsIgnoreCase(REJECTED.name())){
-                timeEntryBo.setStatus("");
-            }
             if (!timeEntryBo.getStatus().equalsIgnoreCase(REJECTED.name()) && !timeEntryBo.getComment().isEmpty()) {
                 String message = ": Only entries with '" + REJECTED.name() + "' status can be commented.";
                 log.error(message);

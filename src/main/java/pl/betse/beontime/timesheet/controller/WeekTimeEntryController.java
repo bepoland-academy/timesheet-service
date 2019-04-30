@@ -12,6 +12,7 @@ import pl.betse.beontime.timesheet.mapper.TimeEntryMapper;
 import pl.betse.beontime.timesheet.model.WeekTimeEntryBody;
 import pl.betse.beontime.timesheet.model.WeekTimeEntryBodyList;
 import pl.betse.beontime.timesheet.service.TimeEntryService;
+import pl.betse.beontime.timesheet.service.TimeEntryStatus;
 import pl.betse.beontime.timesheet.utils.DateChecker;
 import pl.betse.beontime.timesheet.validation.CreateTimeEntry;
 
@@ -57,6 +58,8 @@ public class WeekTimeEntryController {
         List<WeekTimeEntryBody> weekTimeEntryBodyList = timeEntryBoList.stream()
                 .map(timeEntryMapper::fromTimeEntryBoToWeekTimeEntryBody)
                 .collect(Collectors.toList());
+
+        weekTimeEntryBodyList.forEach(item -> item.setOffSite(true));
         Link link = constructLink(userGuid, weekNumber);
         weekTimeEntryBodyList.forEach(item -> item.add(constructDeleteLink(userGuid, weekNumber, item.getProjectId())));
         return ResponseEntity.ok(new Resources<>(weekTimeEntryBodyList, link));
